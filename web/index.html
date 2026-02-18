@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notifyy</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1e1e1e">
+</head>
+<body>
+    <header>
+        <h1>Notifyy</h1>
+        <button id="enable-notifications" class="btn-secondary">Enable Notifications</button>
+    </header>
+
+    <main>
+        <section id="add-form" class="card">
+            <h2>Add Opportunity</h2>
+            <form id="job-form">
+                <div class="form-group">
+                    <input type="text" id="company" placeholder="Company Name" required>
+                    <input type="text" id="role" placeholder="Role/Title" required>
+                </div>
+                <div class="form-group">
+                    <input type="url" id="link" placeholder="Application Link (https://...)" required>
+                    <input type="datetime-local" id="deadline" required>
+                </div>
+                <button type="submit" class="btn-primary">Track Opportunity</button>
+            </form>
+        </section>
+
+        <section id="dashboard">
+            <div class="column">
+                <h3>Active Deadlines</h3>
+                <div id="list-active" class="list-container"></div>
+            </div>
+            
+            <div class="column">
+                <h3>Applied / Pending</h3>
+                <div id="list-applied" class="list-container"></div>
+            </div>
+
+            <div class="column">
+                <h3>Expired / Ignored</h3>
+                <div id="list-expired" class="list-container"></div>
+            </div>
+        </section>
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>
