@@ -23,11 +23,22 @@
                     <input type="text" id="role" placeholder="Role/Title" required>
                 </div>
                 <div class="form-group">
-                    <input type="url" id="link" placeholder="Application Link (https://...)" required>
-                    <input type="datetime-local" id="deadline" required>
+                    <input type="url" id="link" placeholder="Application Link (optional)">
+                    <input type="date" id="deadline" required>
                 </div>
                 <button type="submit" class="btn-primary">Track Opportunity</button>
             </form>
+        </section>
+
+        <section id="companies" class="card">
+            <h2>Tracked Companies</h2>
+            <form id="company-form">
+                <div class="form-group">
+                    <input type="text" id="company-name" placeholder="Company to track" required>
+                    <button type="submit" class="btn-secondary">Add Company</button>
+                </div>
+            </form>
+            <div id="companies-list" class="list-container"></div>
         </section>
 
         <section id="dashboard">

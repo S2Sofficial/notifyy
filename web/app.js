@@ -4,11 +4,13 @@
 
 // Constants
 const STORAGE_KEY = "opportunities";
+const STORAGE_COMPANIES = "companies";
 const ONE_HOUR = 3600000;
 const ONE_DAY = 86400000;
 
 // State
 let opportunities = [];
+let companies = [];
 let audioCtx = null;
 
 // DOM Elements
@@ -22,7 +24,9 @@ const btnNotify = document.getElementById('enable-notifications');
 
 async function init() {
     loadData();
+    loadCompanies();
     render();
+    renderCompanies();
     
     // Register Service Worker
     if ('serviceWorker' in navigator) {
@@ -51,6 +55,53 @@ async function init() {
     // Initial Foreground Check
     checkNotifications();
 }
+
+function loadCompanies() {
+    try {
+        const raw = localStorage.getItem(STORAGE_COMPANIES);
+        companies = raw ? JSON.parse(raw) : [];
+    } catch (e) {
+        companies = [];
+    }
+}
+
+function saveCompanies() {
+    try {
+        localStorage.setItem(STORAGE_COMPANIES, JSON.stringify(companies));
+    } catch (e) {}
+}
+
+function renderCompanies() {
+    const container = document.getElementById('companies-list');
+    if (!container) return;
+    container.innerHTML = '';
+    companies.forEach((c) => {
+        const div = document.createElement('div');
+        div.className = 'company-item item';
+        const count = opportunities.filter(o => o.company === c).length;
+        div.innerHTML = `
+            <div class="item-header"><span class="company">${c}</span>
+              <span class="role">${count} opp(s)</span></div>
+            <div class="actions">
+                <button class="btn-sm btn-primary" onclick="filterByCompany('${c}')">Show</button>
+                <button class="btn-sm btn-ignore" onclick="removeCompany('${c}')">Remove</button>
+            </div>`;
+        container.appendChild(div);
+    });
+}
+
+window.filterByCompany = (name) => {
+    const filtered = opportunities.filter(o => o.company === name);
+    // temporarily render filtered list in active column
+    listActive.innerHTML = '';
+    filtered.forEach(opp => listActive.appendChild(createItem(opp)));
+};
+
+window.removeCompany = (name) => {
+    companies = companies.filter(c => c !== name);
+    saveCompanies();
+    renderCompanies();
+};
 
 function loadData() {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -180,12 +231,13 @@ function createItem(opp) {
 
     div.className = `item ${urgencyClass}`;
     
+    const linkHtml = opp.link ? `<div><a href="${opp.link}" target="_blank" style="color:var(--primary)">Link</a></div>` : '';
     div.innerHTML = `
         <div class="item-header">
             <span class="company">${opp.company}</span>
             <span class="role">${opp.role}</span>
         </div>
-        <div><a href="${opp.link}" target="_blank" style="color:var(--primary)">Link</a></div>
+        ${linkHtml}
         <div class="countdown" id="timer-${opp.id}">Loading...</div>
         <div class="actions">
             ${opp.status === 'pending' ? `
@@ -247,8 +299,15 @@ form.addEventListener('submit', (e) => {
         id: crypto.randomUUID(),
         company: document.getElementById('company').value,
         role: document.getElementById('role').value,
-        link: document.getElementById('link').value,
-        deadline: new Date(document.getElementById('deadline').value).getTime(),
+        link: document.getElementById('link').value || '',
+        // deadline is date-only (YYYY-MM-DD). Parse as local midnight.
+        deadline: (function(d){
+            const val = document.getElementById('deadline').value;
+            if (!val) return Date.now();
+            const parts = val.split('-');
+            const dt = new Date(parts[0], parts[1]-1, parts[2], 23, 59, 59);
+            return dt.getTime();
+        })(),
         status: 'pending',
         createdAt: Date.now(),
         lastNotifiedAt: 0
@@ -259,6 +318,21 @@ form.addEventListener('submit', (e) => {
     render();
     form.reset();
 });
+
+// Company form
+const companyForm = document.getElementById('company-form');
+if (companyForm) {
+    companyForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const input = document.getElementById('company-name');
+        const name = input.value.trim();
+        if (!name) return;
+        if (!companies.includes(name)) companies.push(name);
+        saveCompanies();
+        renderCompanies();
+        input.value = '';
+    });
+}
 
 window.updateStatus = (id, status) => {
     const idx = opportunities.findIndex(o => o.id === id);

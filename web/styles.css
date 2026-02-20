@@ -113,6 +113,72 @@ button {
 .status-applied { border-left-color: var(--primary); opacity: 0.7; }
 .status-expired { border-left-color: #555; opacity: 0.5; }
 
+/* Company Items Styling */
+.company-item {
+    background: linear-gradient(135deg, #1e1e1e 0%, #2a2a2a 100%);
+    border-left-color: var(--primary);
+}
+
+.company-item:hover {
+    background: linear-gradient(135deg, #2a2a2a 0%, #353535 100%);
+    box-shadow: 0 4px 12px rgba(187, 134, 252, 0.15);
+}
+
+/* Enhanced List Container */
+.list-container {
+    min-height: 100px;
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+.list-container::-webkit-scrollbar {
+    width: 8px;
+}
+
+.list-container::-webkit-scrollbar-track {
+    background: #1e1e1e;
+    border-radius: 4px;
+}
+
+.list-container::-webkit-scrollbar-thumb {
+    background: var(--primary);
+    border-radius: 4px;
+}
+
+/* Responsive Grid for Companies Section */
+#companies {
+    margin-top: 1rem;
+}
+
+#companies .form-group {
+    grid-template-columns: 1fr auto;
+}
+
+/* Improved Button Hover */
+button:hover {
+    opacity: 0.9;
+    transform: scale(1.02);
+    transition: all 0.2s ease;
+}
+
+button:active {
+    transform: scale(0.98);
+}
+
+/* Header Enhancement */
+header h1 {
+    background: linear-gradient(90deg, var(--primary), var(--green));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Card Shadow for Depth */
+.card {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
 @media (max-width: 600px) {
     .form-group { grid-template-columns: 1fr; }
+    #companies .form-group { grid-template-columns: 1fr; }
 }

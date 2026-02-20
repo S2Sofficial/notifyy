@@ -1,290 +1,262 @@
-# 📋 Notifyy - Application Deadline Tracker
+# Notifyy - Deadline Tracking & Company Watchlist
 
-A **standalone desktop application** for tracking job application deadlines with automated notifications. Runs independently without external services, with automatic Windows login startup capability.
+A Progressive Web App for tracking job application deadlines with automatic notifications and company watchlist management.
 
-## 🎯 Features
+## ✨ Features
 
-✅ **Self-Contained Application**  
-- No need for external HTTP servers
-- Built-in web server runs in the background
-- Single executable after build
+✅ **Standalone Desktop Application** - Runs independently with built-in web server  
+✅ **Company Watchlist** - Track and monitor companies you're interested in  
+✅ **Date-Only Deadlines** - Simple date selection (no time required)  
+✅ **Optional Links** - Add application links only when needed  
+✅ **Auto-Launch at Login** - Automatically starts when you log in to Windows  
+✅ **Keep Window Open** - Prevent accidental closure of control panel  
+✅ **Smart Notifications** - Intelligent notification scheduling based on urgency  
+✅ **Dark Mode** - Beautiful dark theme optimized for long sessions  
+✅ **Offline Support** - Service worker caching for offline access  
+✅ **Local Storage** - All data stored locally in your browser  
 
-✅ **Smart Notifications**  
-- Escalating notification schedule based on deadline urgency
-- Desktop alerts with sound
-- Browser notifications with vibration
+## 🚀 Quick Start
 
-✅ **Auto-Startup at Login** *(Optional)*  
-- Toggle notification auto-launch via control panel
-- Persistent configuration saved locally
-- Can be disabled anytime
+### For End Users (Executable)
 
-✅ **Progressive Web App**  
-- Offline-first with service worker caching
-- Beautiful dark mode UI
-- Responsive design for all devices
+1. **Copy the `src` folder** to any location on your computer (e.g., `C:\Notifyy\`)
+2. **Run `Notifyy.exe`** - Double-click to launch
+3. **Enable Notifications** - Click the button when prompted
+4. **Start Tracking** - Add opportunities and companies
 
-✅ **Local Data Storage**  
-- All data stored in browser's localStorage
-- No cloud dependency
-- Complete privacy
+That's it! No installation, no Python required.
 
-## 📦 Installation
+### For Developers (Python Source)
 
-### Quick Start (Testing)
+**Requirements:**
+- Windows 10 or later
+- Python 3.8+
 
-1. **Download or clone this repository**
-   ```bash
-   git clone https://github.com/S2Sofficial/notify.git
-   cd notify
-   ```
-
-2. **Run immediately** (requires Python 3.8+)
-   ```bash
-   run.bat
-   ```
-   Browser will auto-open to `http://localhost:8000`
-
-### Full Setup (Build Executable)
-
-#### Option A: PowerShell (Recommended)
+**Run from source:**
 ```powershell
-# Right-click setup.ps1 → Run with PowerShell
-# Or run in PowerShell:
-.\setup.ps1
+python notifyy.py
 ```
 
-#### Option B: Command Prompt
-```batch
-# Double-click setup.bat or:
-setup.bat
-```
+The app will:
+- Start a local web server on port 8000 (or next available)
+- Open in your default browser automatically
+- Show a control panel for settings
 
-#### Option C: Manual Build
-```bash
-# Install PyInstaller
-pip install pyinstaller pywin32
+## 📖 Usage Guide
 
-# Build executable
-pyinstaller --onefile --windowed --name "Notifyy" ^
-    --add-data "web;web" notifyy.py
+### Adding Opportunities
 
-# Copy to Program Files
-copy dist\Notifyy.exe "C:\Program Files\Notifyy\"
-copy web "C:\Program Files\Notifyy\web" /E /I /Y
-```
+1. **Fill in the form:**
+   - **Company Name** - Required
+   - **Role/Title** - Required
+   - **Application Link** - Optional (leave blank if not needed)
+   - **Deadline** - Date only (defaults to end of selected day)
 
-## 🚀 Usage
+2. **Click "Track Opportunity"**
 
-### Starting the App
+The deadline will automatically be set to 11:59 PM on the selected date.
 
-**After Installation:**
-- Launch from Start Menu → Notifyy
-- Or run: `Notifyy.exe` from installation directory
+### Company Watchlist
 
-**During Development:**
-- Double-click `run.bat`
-- App opens at `http://localhost:8000`
+Track companies you frequently apply to:
 
-### First Run
+1. **Add a Company:**
+   - Enter company name in the "Tracked Companies" section
+   - Click "Add Company"
 
-1. **Enable Notifications** (if desired)
-   - Click "Enable Notifications" button
-   - Grant browser permission when prompted
+2. **View Opportunities:**
+   - Click "Show" next to a company to filter opportunities
+   - See how many opportunities you have per company
 
-2. **Add Your First Opportunity**
-   - Fill in Company Name
-   - Enter Role/Job Title
-   - Paste Application URL (must be HTTPS)
-   - Set deadline date and time
-   - Click "Track Opportunity"
+3. **Remove Companies:**
+   - Click "Remove" to delete from watchlist
 
-3. **Manage Auto-Startup** (Control Panel)
-   - Check "Start automatically at login" to auto-launch
-   - Uncheck to require manual startup
-   - Setting persists across restarts
+### Managing Opportunities
 
-### Dashboard Sections
+**Dashboard Columns:**
+- **Active Deadlines** - Pending applications sorted by urgency
+- **Applied / Pending** - Applications you've already submitted
+- **Expired / Ignored** - Old or declined opportunities
 
-| Section | Content |
-|---------|---------|
-| **Active Deadlines** | Pending applications sorted by urgency |
-| **Applied / Pending** | Submissions you've already made |
-| **Expired / Ignored** | Past deadlines or rejected opportunities |
+**Actions:**
+- **Applied** - Move to "Applied" column
+- **Ignore** - Move to "Expired" column
+- **Delete** - Remove permanently (only for applied/expired items)
 
-### Urgency Colors
+### Urgency Indicators
 
+Opportunities are color-coded by remaining time:
 - 🟢 **Green** - More than 7 days remaining
-- 🟠 **Orange** - 3-7 days remaining  
+- 🟠 **Orange** - 3-7 days remaining
 - 🔴 **Red** - Less than 3 days remaining
 
 ### Notification Schedule
 
-Notifications are intelligently timed based on days remaining:
+Notifications are intelligently timed based on deadline urgency:
+- **15+ days**: Every 3 days
+- **7-15 days**: Daily
+- **3-7 days**: Every 12 hours
+- **1-3 days**: Every 4 hours
+- **Less than 1 day**: Every hour
 
-| Days Remaining | Frequency |
-|---|---|
-| 15+ days | Every 3 days |
-| 7-15 days | Daily |
-| 3-7 days | Every 12 hours |
-| 1-3 days | Every 4 hours |
-| < 1 day | Every hour |
+## ⚙️ Control Panel Settings
 
-## 🏗️ Project Structure
+The control panel provides:
+
+### Auto-Startup
+- ✅ **Enabled** - App starts automatically at Windows login
+- ❌ **Disabled** - Manual launch required
+
+### Keep Window Open
+- ✅ **Enabled** - Prevents closing of control panel (app remains always running)
+- ❌ **Disabled** - Allows normal window closing
+
+### Actions
+- **Open Notifyy** - Opens the app in your browser
+- **Exit** - Closes the application
+
+## 📂 File Structure
 
 ```
-notify/
-├── notifyy.py              # Main Python application
-├── setup.ps1               # PowerShell installer
-├── setup.bat               # Batch installer
-├── run.bat                 # Quick start launcher
-├── README.md               # This file
-├── QUICKSTART.md           # Quick setup guide
-└── web/                    # Web application files
-    ├── index.html          # UI structure
-    ├── app.js              # Logic & notifications
-    ├── styles.css          # Styling
-    ├── manifest.json       # PWA manifest
-    ├── service-worker.js   # Offline support
-    └── icons/              # App icons
-        ├── icon-192.png
-        └── icon-512.png
+src/
+├── Notifyy.exe          # Standalone executable (no Python needed)
+├── notifyy.py           # Python source code
+├── README.md            # This file
+└── web/                 # Web application files
+    ├── index.html       # UI structure
+    ├── styles.css       # Enhanced dark theme
+    ├── app.js           # App logic & notifications
+    ├── service-worker.js # Offline support
+    ├── manifest.json    # PWA manifest
+    └── icons/           # App icons
 ```
 
-## 🔧 How It Works
+## 💾 Data Storage
 
-### Python Application (`notifyy.py`)
-- HTTP server (port 8000)
-- Control panel window (Tkinter GUI)
-- Windows registry management for auto-startup
-- Configuration file: `notifyy_config.json`
+**Local Storage:**
+- All opportunities stored in browser localStorage
+- Company watchlist stored in browser localStorage
+- No cloud sync - everything stays on your computer
+- No account required - works completely offline
 
-### Web Application (`web/`)
-- **Progressive Web App** (PWA)
-- **Service Worker** for offline support
-- **localStorage** for data persistence
-- Real-time countdown timers
-- Foreground notifications with audio
+**Backup Your Data:**
+1. Open browser Developer Tools (Press F12)
+2. Go to Console tab
+3. Export opportunities:
+   ```javascript
+   copy(JSON.stringify(JSON.parse(localStorage.opportunities), null, 2))
+   ```
+4. Export companies:
+   ```javascript
+   copy(JSON.stringify(JSON.parse(localStorage.companies), null, 2))
+   ```
+5. Paste into text files for safekeeping
 
-### Auto-Startup Mechanism
+**Restore Data:**
+1. Open Developer Tools Console
+2. Run:
+   ```javascript
+   localStorage.setItem('opportunities', 'YOUR_BACKUP_JSON')
+   localStorage.setItem('companies', 'YOUR_COMPANIES_JSON')
+   ```
+3. Refresh the page
 
-Registry entry added to:
-```
-HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run
-Name: Notifyy
-Value: Path to Notifyy.exe
-```
+## 🔧 Troubleshooting
+
+### Executable Won't Start
+- **Check Windows SmartScreen**: Click "More info" → "Run anyway"
+- **Verify web folder**: Ensure `web` folder is next to `Notifyy.exe`
+- **Port conflict**: Close apps using port 8000 or let Notifyy find next available port
+
+### Notifications Not Working
+1. Click "Enable Notifications" button in the app
+2. Check Windows notification settings (Settings → System → Notifications)
+3. Ensure browser has notification permissions
+
+### Control Panel Won't Close
+- If "Keep Window Open" is enabled, disable it first
+- Then click Exit button or close the window
+
+### Data Lost After Browser Clear
+- Browser data clearing will remove all opportunities
+- Always backup data before clearing browser cache/storage
+- Consider using separate browser profile for Notifyy
+
+### App Not in Startup
+1. Open Control Panel
+2. Check "Start automatically at login"
+3. If still not working, check Windows Task Manager → Startup tab
+
+## 🎨 UI Enhancements
+
+**New in This Version:**
+- Gradient header with animated text
+- Enhanced company cards with hover effects
+- Scrollable lists with custom scrollbars
+- Smooth button hover animations
+- Box shadows for depth
+- Responsive layout for mobile devices
+
+## 🔐 Privacy & Security
+
+- ✅ No internet connection required (except for initial browser launch)
+- ✅ No data collection or tracking
+- ✅ No external API calls
+- ✅ All data stored locally
+- ✅ No registration or login required
 
 ## 📋 System Requirements
 
-| Requirement | Specification |
-|---|---|
-| **OS** | Windows 10 or later |
-| **Python** | 3.8+ (for running from source) |
-| **RAM** | 512 MB minimum |
-| **Disk Space** | 150 MB (includes dependencies) |
-| **Browser** | Any modern browser (Edge, Chrome, Firefox) |
+- **OS**: Windows 10 or later
+- **RAM**: 256 MB minimum
+- **Disk**: 50 MB for portable installation
+- **Browser**: Any modern browser (Chrome, Edge, Firefox, etc.)
+- **Python**: Not required for executable; 3.8+ for source
 
-## 🔐 Data & Privacy
+## 🚢 Distribution & Transfer
 
-- ✅ **100% Local Storage** - All data on your computer
-- ✅ **No Cloud Services** - No internet required after installation
-- ✅ **No Tracking** - No analytics or telemetry
-- ✅ **Open Source** - Code is publicly available
+The `src` folder is fully portable:
 
-### Backup Your Data
+1. **Copy the entire `src` folder** to:
+   - USB drive
+   - Network share
+   - Another computer
+   - Cloud storage (for transfer only)
 
-Export opportunities as JSON:
+2. **Run on any Windows 10+ machine** - No installation needed
 
-```javascript
-// In browser console (F12):
-copy(JSON.stringify(JSON.parse(localStorage.opportunities), null, 2))
-```
+3. **Data portability**: Copy the `web` folder to preserve same data across devices (if browser data is shared)
 
-Paste into a text file for safekeeping.
+## 🛠️ Building from Source
 
-## ⚙️ Configuration
+If you want to rebuild the executable:
 
-### Control Panel Options
+1. **Install dependencies:**
+   ```powershell
+   pip install pyinstaller pillow
+   ```
 
-**Auto-Startup Toggle**
-- Enables/disables application launch at Windows login
-- Setting saved to `notifyy_config.json`
+2. **Build executable:**
+   ```powershell
+   pyinstaller --noconfirm --onefile --windowed --add-data "web;web" --icon="web/icons/icon-192.png" --name="Notifyy" notifyy.py
+   ```
 
-**Notification Settings**
-- Enable/disable desktop notifications
-- No additional popup configuration needed (uses smart escalation)
+3. **Output:** `dist/Notifyy.exe`
 
-### Configuration File
+## 📝 Changelog
 
-`notifyy_config.json` (created after first run):
-```json
-{
-  "startup_enabled": true,
-  "minimized": false
-}
-```
+### Version 2.0 (February 2026)
+- ✨ Added company watchlist feature
+- ✨ Date-only deadlines (no time selection)
+- ✨ Optional application links
+- ✨ Keep window open setting
+- 🎨 Enhanced UI with gradients and animations
+- 🎨 Custom scrollbars and hover effects
+- 🐛 Fixed deadline parsing for end-of-day
+- 🐛 Improved control panel close behavior
 
-## 🐛 Troubleshooting
-
-### App won't start
-```
-Error: "Port 8000 already in use"
-Solution: Close other applications using port 8000, or the app will auto-retry on port 8001
-```
-
-### Notifications not appearing
-1. Check Windows notification settings
-2. Click "Enable Notifications" in app
-3. Verify browser notification permissions
-4. Grant permission when prompted
-
-### Auto-startup not working
-1. Run setup as Administrator
-2. Ensure Windows Startup folder allows registry entries
-3. Check Settings → Apps → Startup (toggle Notifyy)
-
-### Can't disable auto-startup
-1. Launch app as Administrator
-2. Uncheck "Start automatically at login"
-3. Or manually remove from Windows Run registry
-
-## 👨‍💻 Development
-
-### Running from Source
-
-```bash
-# Install dependencies
-pip install pyinstaller pywin32
-
-# Run application
-python notifyy.py
-```
-
-### Building Executable
-
-```bash
-pip install pyinstaller
-
-pyinstaller --onefile --windowed --name "Notifyy" \
-    --add-data "web;web" notifyy.py
-```
-
-Output: `dist/Notifyy.exe`
-
-### Modifying the Web UI
-
-1. Edit files in `web/` folder
-2. Re-run `python notifyy.py` to test changes
-3. Rebuild executable when satisfied
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
+### Version 1.0
+- Initial release with basic deadline tracking
 
 ## 📄 License
 
@@ -292,46 +264,13 @@ MIT License - Free to use, modify, and distribute
 
 ## 🆘 Support
 
-### Common Questions
-
-**Q: Does it work offline?**  
-A: Yes! Service worker caches all files. Internet not required after first launch.
-
-**Q: Can I export my data?**  
-A: Yes, use the browser console method above to export as JSON.
-
-**Q: What happens if I uncheck auto-startup?**  
-A: App won't launch at login. You'll need to run Notifyy.exe manually. Can re-enable anytime.
-
-**Q: Is my data safe?**  
-A: Completely safe. All stored locally in browser, no cloud sync or tracking.
-
-### Getting Help
-
-1. Check **QUICKSTART.md** for quick setup
-2. Review troubleshooting section above
-3. Check application console (F12) for errors
-4. Open an issue on GitHub
-
-## 🗺️ Roadmap
-
-- [ ] Multi-user support
-- [ ] Custom notification sounds
-- [ ] Reminder customization
-- [ ] Application statistics
-- [ ] Email notifications option
-- [ ] Calendar integration
-
-## 📍 Version History
-
-**v1.0** (Feb 2026)
-- Initial release
-- Basic deadline tracking
-- Smart notifications
-- Auto-startup support
+For issues or questions:
+1. Check this README
+2. Review the control panel settings
+3. Check browser console for errors (F12 → Console)
 
 ---
 
-**Made with ❤️ for job seekers everywhere**
-
-For updates and issues, visit: [GitHub Repository](https://github.com/S2Sofficial/notify)
+**Version**: 2.0  
+**Last Updated**: February 20, 2026  
+**Built with**: Python, JavaScript, HTML5, CSS3

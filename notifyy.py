@@ -84,7 +84,7 @@ def load_config():
                 return json.load(f)
         except:
             pass
-    return {'startup_enabled': True, 'minimized': False}
+    return {'startup_enabled': True, 'minimized': False, 'keep_open': False}
 
 def save_config(config):
     """Save configuration"""
@@ -158,6 +158,21 @@ def create_control_window():
                                    variable=startup_var, command=toggle_startup,
                                    font=("Arial", 10))
     startup_check.pack(pady=15)
+
+    # Keep-open checkbox (prevent closing when enabled)
+    keep_open_var = tk.BooleanVar(value=config.get('keep_open', False))
+    def toggle_keep_open():
+        config['keep_open'] = keep_open_var.get()
+        save_config(config)
+        if keep_open_var.get():
+            messagebox.showinfo("Info", "Notifyy will remain open. Close is disabled.")
+        else:
+            messagebox.showinfo("Info", "Close allowed. You can exit the control panel.")
+
+    keep_open_check = tk.Checkbutton(root, text="Keep control window open (prevent closing)",
+                                     variable=keep_open_var, command=toggle_keep_open,
+                                     font=("Arial", 10))
+    keep_open_check.pack(pady=5)
     
     # Buttons
     button_frame = tk.Frame(root)
@@ -181,6 +196,16 @@ def create_control_window():
     info_label = tk.Label(root, text="Close this window to minimize to system tray", 
                          font=("Arial", 8), fg="gray")
     info_label.pack(pady=10)
+
+    # Handle close behavior depending on keep_open setting
+    def on_close():
+        if keep_open_var.get():
+            messagebox.showinfo("Notifyy", "Keep-open is enabled. The window will remain open.")
+            return
+        else:
+            root.destroy()
+
+    root.protocol('WM_DELETE_WINDOW', on_close)
     
     return root
 
