@@ -1,445 +1,801 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="en" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Notifyy - Deadline Tracker & Company Watchlist</title>
-    <meta name="description" content="Track job application deadlines with automatic notifications, company watchlist, and smart scheduling.">
-    <meta name="og:title" content="Notifyy - Deadline Tracker">
-    <meta name="og:description" content="A modern deadline tracker with company watchlist and intelligent notifications.">
-    <meta name="og:image" content="https://github.com/s2sofficial/notifyy/raw/main/web/icons/icon-512.png">
-    <meta name="theme-color" content="#f05a28">
+    <meta name="description" content="Zero cloud footprint. Absolute data sovereignty. A standalone executable engineered for high-signal opportunity management and algorithmic triage.">
+    <meta name="keywords" content="deadline tracker, job application tracker, career management, local execution, deterministic tracking, PWA, standalone executable">
+    <meta name="author" content="S2Sofficial">
+    <meta property="og:title" content="Notifyy - Deterministic Tracking Architecture">
+    <meta property="og:description" content="Zero cloud footprint. Absolute data sovereignty. A standalone executable engineered for high-signal opportunity management and algorithmic triage.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://github.com/s2sofficial/notifyy">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Notifyy - Deterministic Tracking Architecture">
+    <meta name="twitter:description" content="Zero cloud footprint. Absolute data sovereignty. A standalone executable engineered for high-signal opportunity management and algorithmic triage.">
+    <title>Notifyy - Deterministic Tracking Architecture</title>
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#0a0a0a" media="(prefers-color-scheme: dark)">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Prevent FOUT by checking theme immediately
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
         }
-
+    </script>
+    <style>
         :root {
             --bg: #f4f4f2;
             --surface: #ffffff;
             --border: #e0e0e0;
+            --border-strong: #1a1a1a;
             --text: #1a1a1a;
             --text-muted: #666666;
             --primary: #f05a28;
             --primary-hover: #d04010;
+            --primary-invert: #ffffff;
             --grid-line: rgba(240, 90, 40, 0.1);
+            --green: #00a859;
+            --orange: #f05a28;
+            --red: #e63946;
         }
 
-        @media (prefers-color-scheme: dark) {
-            :root {
-                --bg: #0a0a0a;
-                --surface: #121212;
-                --border: #2a2a2a;
-                --text: #ffffff;
-                --text-muted: #888888;
-                --primary: #ff5e28;
-                --primary-hover: #ff7a4d;
-                --grid-line: rgba(255, 255, 255, 0.03);
-            }
+        :root.dark {
+            --bg: #0a0a0a;
+            --surface: #121212;
+            --border: #2a2a2a;
+            --border-strong: #444444;
+            --text: #ffffff;
+            --text-muted: #888888;
+            --primary: #ff5e28;
+            --primary-hover: #ff7a4d;
+            --primary-invert: #000000;
+            --grid-line: rgba(255, 255, 255, 0.03);
+            --green: #00ff88;
+            --orange: #ff5e28;
+            --red: #ff3344;
         }
-
-        html {
-            scroll-behavior: smooth;
-        }
-
+        
         body {
-            font-family: 'Inter', system-ui, sans-serif;
             background-color: var(--bg);
             color: var(--text);
-            line-height: 1.6;
-            background-image:
+            font-family: 'Inter', system-ui, sans-serif;
+            margin: 0;
+            padding: 0;
+            -webkit-font-smoothing: antialiased;
+            text-rendering: optimizeLegibility;
+            background-image: 
                 linear-gradient(var(--grid-line) 1px, transparent 1px),
                 linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
             background-size: 32px 32px;
-            transition: background-color 0.3s ease;
+            background-position: center top;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            overflow-x: hidden;
         }
 
-        header {
-            border-bottom: 1px solid var(--border);
-            background-color: var(--surface);
-            padding: 2rem 1rem;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 1rem;
-        }
-
-        .header-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 2rem;
-        }
-
-        .logo {
+        /* Loading Screen */
+        #loader {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            background-color: var(--bg);
             display: flex;
             align-items: center;
-            gap: 1rem;
-            text-decoration: none;
-            color: var(--text);
-        }
-
-        .logo-icon {
-            display: inline-grid;
-            grid-template-columns: 1fr 1fr;
-            grid-template-rows: 1fr 1fr;
-            width: 28px;
-            height: 28px;
-            gap: 2px;
-        }
-
-        .logo-icon span {
-            background-color: var(--primary);
-        }
-
-        .logo-icon span:nth-child(4) {
-            background-color: transparent;
-            border: 2px solid var(--primary);
-        }
-
-        .logo h1 {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 1.2rem;
-            font-weight: 700;
-            letter-spacing: 0.1em;
-            text-transform: uppercase;
-        }
-
-        .nav {
-            display: flex;
-            gap: 2rem;
-            align-items: center;
-        }
-
-        .nav a {
-            text-decoration: none;
-            color: var(--text);
-            font-size: 0.9rem;
-            transition: color 0.2s;
-        }
-
-        .nav a:hover {
-            color: var(--primary);
-        }
-
-        .btn {
-            padding: 0.6rem 1.5rem;
-            border: 1px solid var(--border);
-            background-color: transparent;
-            color: var(--text);
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.8rem;
-            font-weight: 700;
-            letter-spacing: 0.05em;
-            text-transform: uppercase;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            border-radius: 0;
-        }
-
-        .btn:hover {
-            border-color: var(--primary);
-            color: var(--primary);
-        }
-
-        .btn-primary {
-            background-color: var(--primary);
-            color: white;
-            border-color: var(--primary);
-        }
-
-        .btn-primary:hover {
-            background-color: var(--primary-hover);
-            border-color: var(--primary-hover);
-        }
-
-        main {
-            padding: 4rem 1rem;
-        }
-
-        .hero {
-            max-width: 900px;
-            margin: 0 auto 6rem;
-            text-align: center;
-        }
-
-        .hero h2 {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 3rem;
-            font-weight: 700;
-            line-height: 1.2;
-            margin-bottom: 1rem;
-            letter-spacing: -0.02em;
-        }
-
-        .hero p {
-            font-size: 1.1rem;
-            color: var(--text-muted);
-            margin-bottom: 2rem;
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .hero-cta {
-            display: flex;
-            gap: 1rem;
             justify-content: center;
-            flex-wrap: wrap;
+            transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.6s;
+        }
+        #loader.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+        
+        .loader-logo {
+            transform: scale(2);
+            animation: initScale 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        @keyframes initScale {
+            0% { transform: scale(1.5) rotate(45deg); opacity: 0; }
+            50% { transform: scale(2.2) rotate(45deg); opacity: 1; }
+            100% { transform: scale(2) rotate(45deg); opacity: 1; }
+        }
+        .loader-logo span { animation: pulseLogo 0.8s infinite alternate; }
+        .loader-logo span:nth-child(1) { animation-delay: 0s; }
+        .loader-logo span:nth-child(2) { animation-delay: 0.15s; }
+        .loader-logo span:nth-child(3) { animation-delay: 0.3s; }
+        .loader-logo span:nth-child(4) { animation-delay: 0.45s; }
+        @keyframes pulseLogo {
+            0% { opacity: 0.2; transform: scale(0.95); }
+            100% { opacity: 1; transform: scale(1.05); }
         }
 
-        .features {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-            margin: 4rem 0;
-        }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+        .text-primary { color: var(--primary); }
+        .bg-primary { background-color: var(--primary); }
 
-        .feature-card {
+        /* Vector Nodes Component */
+        .vector-box {
+            position: relative;
             background-color: var(--surface);
-            border: 1px solid var(--border);
-            padding: 2rem;
-            transition: transform 0.2s, border-color 0.2s;
+            border: 1px solid var(--border-strong);
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease, background-color 0.3s ease;
         }
-
-        .feature-card:hover {
+        
+        .vector-box:hover {
             transform: translateY(-4px);
             border-color: var(--primary);
         }
 
-        .feature-card h3 {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.9rem;
-            font-weight: 700;
-            letter-spacing: 0.05em;
-            text-transform: uppercase;
-            color: var(--primary);
-            margin-bottom: 1rem;
-        }
-
-        .feature-card p {
-            font-size: 0.95rem;
-            color: var(--text-muted);
-            line-height: 1.6;
-        }
-
-        .specs {
-            background-color: var(--surface);
-            border: 1px solid var(--border);
-            padding: 3rem;
-            margin: 4rem 0;
-            border-radius: 0;
-        }
-
-        .specs h2 {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 1.5rem;
-            font-weight: 700;
-            margin-bottom: 2rem;
-            color: var(--primary);
-        }
-
-        .specs-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 2rem;
-        }
-
-        .spec-item {
-            padding: 1.5rem;
-            border: 1px solid var(--border);
+        .vector-box::before,
+        .vector-box::after {
+            content: '';
+            position: absolute;
+            width: 5px;
+            height: 5px;
             background-color: var(--bg);
+            border: 1px solid var(--primary);
+            z-index: 10;
+            transition: background-color 0.3s ease;
         }
 
-        .spec-item h4 {
+        .vector-box::before {
+            top: -3px; left: -3px;
+            box-shadow: calc(100% + 4px) 0 0 0 var(--bg), calc(100% + 4px) 0 0 0 var(--primary) inset;
+        }
+
+        .vector-box::after {
+            bottom: -3px; left: -3px;
+            box-shadow: calc(100% + 4px) 0 0 0 var(--bg), calc(100% + 4px) 0 0 0 var(--primary) inset;
+        }
+
+        .vector-box:hover::before,
+        .vector-box:hover::after {
+            background-color: var(--primary);
+        }
+
+        /* Abstract Hero Graphic */
+        .geometric-hero {
+            position: relative;
+            width: 100%;
+            height: 400px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            perspective: 1000px;
+        }
+
+        .geo-path {
+            position: absolute;
+            width: 200px;
+            height: 200px;
+            border: 2px solid var(--primary);
+            transform-style: preserve-3d;
+            animation: rotatePath 20s linear infinite;
+        }
+
+        .geo-path::before {
+            content: '';
+            position: absolute;
+            inset: -20px;
+            border: 1px dashed var(--border-strong);
+            transform: translateZ(-50px);
+        }
+
+        .geo-path::after {
+            content: '';
+            position: absolute;
+            inset: 20px;
+            border: 1px solid var(--text-muted);
+            transform: translateZ(50px);
+        }
+
+        .geo-node {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: var(--bg);
+            border: 2px solid var(--primary);
+            transform: translate(-50%, -50%);
+        }
+
+        @keyframes rotatePath {
+            0% { transform: rotateX(60deg) rotateZ(0deg); }
+            100% { transform: rotateX(60deg) rotateZ(360deg); }
+        }
+
+        /* Typography */
+        h1, h2, h3 { text-transform: uppercase; }
+        
+        h2 { 
             font-family: 'JetBrains Mono', monospace;
-            font-size: 0.7rem;
+            font-size: 0.875rem; 
             font-weight: 700;
             letter-spacing: 0.1em;
+            color: var(--primary); 
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        h2::before {
+            content: '';
+            display: block;
+            width: 2rem;
+            height: 1px;
+            background-color: var(--primary);
+        }
+
+        /* Buttons */
+        .btn {
+            font-family: 'JetBrains Mono', monospace;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-weight: 700;
             text-transform: uppercase;
-            color: var(--text-muted);
-            margin-bottom: 0.5rem;
-        }
-
-        .spec-item p {
-            font-size: 1.2rem;
-            font-weight: 600;
-        }
-
-        footer {
-            border-top: 1px solid var(--border);
-            margin-top: 4rem;
-            padding: 2rem 1rem;
-            text-align: center;
-            font-size: 0.9rem;
-            color: var(--text-muted);
-        }
-
-        footer a {
-            color: var(--primary);
+            letter-spacing: 0.05em;
+            font-size: 0.75rem;
+            padding: 1rem 1.5rem;
+            border: 1px solid var(--border-strong);
+            background: transparent;
+            color: var(--text);
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
             text-decoration: none;
+            white-space: nowrap;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
+            border-color: var(--primary);
+            color: var(--primary-invert);
+        }
+        
+        .btn-primary:hover { 
+            background-color: var(--primary-hover); 
+            border-color: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px -10px var(--primary);
         }
 
-        footer a:hover {
-            text-decoration: underline;
+        .btn-secondary:hover { 
+            border-color: var(--primary);
+            color: var(--primary);
+            background-color: var(--surface);
         }
 
-        @media (max-width: 768px) {
-            .header-content {
-                flex-direction: column;
-                gap: 1rem;
-            }
-
-            .nav {
-                flex-direction: column;
-                gap: 1rem;
-            }
-
-            .hero h2 {
-                font-size: 2rem;
-            }
-
-            .hero-cta {
-                flex-direction: column;
-            }
-
-            .hero-cta .btn {
-                width: 100%;
-            }
+        @media (min-width: 640px) {
+            .btn { padding: 1rem 2rem; }
         }
 
-        @media (max-width: 480px) {
-            .hero h2 {
-                font-size: 1.5rem;
-            }
-
-            .feature-card {
-                padding: 1.5rem;
-            }
+        /* Brand Logo Matrix */
+        .brand-logo {
+            display: inline-grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            width: 24px;
+            height: 24px;
+            gap: 2px;
+            transform: rotate(45deg);
+            flex-shrink: 0;
         }
+        .brand-logo span { background-color: var(--primary); transition: opacity 0.3s; }
+        .brand-logo span:nth-child(1) { opacity: 0.4; }
+        .brand-logo span:nth-child(2) { opacity: 0.6; }
+        .brand-logo span:nth-child(3) { opacity: 0.8; }
+        .brand-logo span:nth-child(4) { opacity: 1; background-color: transparent; border: 2px solid var(--primary); }
+        .brand-logo:hover span { opacity: 1; }
+
+        /* Scroll Reveal Animation */
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+            will-change: opacity, transform;
+        }
+        .reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .delay-100 { transition-delay: 100ms; }
+        .delay-200 { transition-delay: 200ms; }
+        .delay-300 { transition-delay: 300ms; }
+
+        /* Application UI Mockup Base */
+        .mockup-window {
+            border: 1px solid var(--border-strong);
+            background: var(--surface);
+            box-shadow: 10px 10px 0 var(--border);
+            overflow: hidden;
+            transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+            border-radius: 8px; /* Mac style rounded edges */
+        }
+        @media (min-width: 768px) {
+            .mockup-window { box-shadow: 20px 20px 0 var(--border); }
+        }
+
+        .mockup-header {
+            border-bottom: 1px solid var(--border-strong);
+            padding: 0.75rem 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--surface);
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+        
+        .mockup-dot {
+            width: 12px; height: 12px;
+            border-radius: 50%;
+            border: 1px solid rgba(0,0,0,0.2);
+        }
+        .mockup-dot:nth-child(1) { background-color: #ff5f56; border-color: #e0443e; }
+        .mockup-dot:nth-child(2) { background-color: #ffbd2e; border-color: #dea123; }
+        .mockup-dot:nth-child(3) { background-color: #27c93f; border-color: #1aab29; }
+
+        /* Demo UI Overrides */
+        .demo-input {
+            border-bottom: 1px solid var(--border-strong);
+            padding: 0.5rem 0;
+            margin-bottom: 1rem;
+            width: 100%;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            transition: border-color 0.3s ease;
+        }
+        .demo-item {
+            background-color: var(--surface);
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--border-strong);
+            padding: 1rem;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+        .demo-urgency-red { border-left-color: var(--red); }
+        .demo-urgency-orange { border-left-color: var(--orange); }
+        .demo-urgency-green { border-left-color: var(--green); }
     </style>
 </head>
+<body class="min-h-screen flex flex-col">
 
-<body>
-    <header>
-        <div class="container">
-            <div class="header-content">
-                <a href="#" class="logo">
-                    <div class="logo-icon">
-                        <span></span><span></span><span></span><span></span>
+    <!-- Loading Screen -->
+    <div id="loader">
+        <div class="brand-logo loader-logo">
+            <span></span><span></span><span></span><span></span>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="border-b border-[var(--border)] bg-[var(--surface)]/90 backdrop-blur-md px-4 sm:px-6 py-4 flex justify-between items-center sticky top-0 z-50">
+        <div class="flex items-center gap-3 sm:gap-4">
+            <div class="brand-logo">
+                <span></span><span></span><span></span><span></span>
+            </div>
+            <span class="hidden sm:inline-block text-xl font-bold tracking-[0.1em] mono leading-none uppercase">Notifyy<span class="text-primary">.</span></span>
+        </div>
+        <div class="hidden md:flex items-center gap-6 mono text-xs uppercase tracking-widest">
+            <a href="#demo" class="text-[var(--text-muted)] hover:text-primary transition-colors">Interface</a>
+            <a href="#features" class="text-[var(--text-muted)] hover:text-primary transition-colors">Specs</a>
+            <a href="#deployment" class="text-[var(--text-muted)] hover:text-primary transition-colors">Deploy</a>
+        </div>
+        <div class="flex items-center gap-2 sm:gap-3">
+            <button id="theme-toggle" class="btn btn-secondary !p-2 sm:!p-3" aria-label="Toggle Theme">
+                <svg id="theme-icon-dark" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+                <svg id="theme-icon-light" class="w-4 h-4 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+            </button>
+            <a href="https://github.com/s2sofficial" target="_blank" class="btn btn-secondary !py-2 !px-3 sm:!px-4 hidden sm:inline-flex">Portfolio</a>
+            <a href="#deployment" class="btn btn-primary !py-2 !px-3 sm:!px-4 text-[10px] sm:text-xs">Get Started</a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="relative pt-12 sm:pt-20 pb-20 sm:pb-32 px-4 sm:px-6 overflow-hidden">
+        <div class="max-w-[1400px] mx-auto grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+            <div class="z-10 reveal visible">
+                <div class="mono text-[10px] sm:text-xs text-primary mb-6 tracking-widest border border-primary/30 inline-block px-3 py-1 bg-primary/5 uppercase">
+                    Build 2.0.4 / Local Execution Only
+                </div>
+                <h1 class="text-4xl sm:text-5xl md:text-7xl font-bold tracking-tighter leading-[1.1] mb-6 sm:mb-8 font-mono uppercase break-words">
+                    Deterministic<br>
+                    <span class="text-[var(--text-muted)]">Deadline</span><br>
+                    Tracking.
+                </h1>
+                <p class="text-base sm:text-lg md:text-xl text-[var(--text-muted)] max-w-xl mb-8 sm:mb-10 leading-relaxed">
+                    A Progressive Web App for tracking job application deadlines with automatic notifications and company watchlist management.
+                </p>
+                <div class="flex flex-col sm:flex-row gap-4 items-center">
+                    <a href="https://github.com/s2sofficial/notifyy/releases/latest" target="_blank" class="btn btn-primary w-full sm:w-auto group">
+                        <svg class="w-4 h-4 mr-2 group-hover:translate-y-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                        Download EXE
+                    </a>
+                    <a href="#architecture" class="btn btn-secondary w-full sm:w-auto">View Architecture</a>
+                </div>
+                <div class="mt-5 mono text-[10px] text-[var(--text-muted)] uppercase flex items-center gap-2">
+                    <span class="w-2 h-2 bg-[var(--green)] rounded-full animate-pulse"></span>
+                    v2.0.4 · Windows x64 · Portable
+                </div>
+            </div>
+
+            <!-- Geometric Abstract Hero Graphic -->
+            <div class="relative reveal visible delay-100 hidden lg:block">
+                <div class="geometric-hero">
+                    <div class="geo-path">
+                        <div class="geo-node" style="top: 0; left: 0;"></div>
+                        <div class="geo-node" style="top: 0; left: 100%;"></div>
+                        <div class="geo-node" style="top: 100%; left: 100%;"></div>
+                        <div class="geo-node" style="top: 100%; left: 0%;"></div>
                     </div>
-                    <h1>Notifyy</h1>
-                </a>
-                <nav class="nav">
-                    <a href="#features">Features</a>
-                    <a href="#download">Download</a>
-                    <a href="https://github.com/s2sofficial/notifyy" target="_blank">GitHub</a>
-                    <button class="btn btn-primary" onclick="window.open('web/index.html')">Launch App</button>
-                </nav>
+                </div>
+                <!-- Decorator Lines -->
+                <div class="absolute top-0 right-0 w-px h-full bg-[var(--border-strong)] opacity-20"></div>
+                <div class="absolute bottom-0 left-0 h-px w-full bg-[var(--border-strong)] opacity-20"></div>
+                <div class="absolute bottom-4 right-4 mono text-[10px] text-[var(--text-muted)] text-right">
+                    X: 145.2<br>Y: 89.4<br>Z: ∞
+                </div>
             </div>
         </div>
-    </header>
+    </section>
 
-    <main class="container">
-        <section class="hero">
-            <h2>Track Deadlines.<br>Never Miss an Opportunity.</h2>
-            <p>A modern deadline tracker with company watchlist, intelligent notifications, and local-first data storage. Built for your workflow.</p>
-            <div class="hero-cta">
-                <button class="btn btn-primary" onclick="window.open('web/index.html')">Open App</button>
-                <button class="btn" onclick="document.getElementById('download').scrollIntoView()">Download v2.0</button>
-            </div>
-        </section>
+    <!-- Live UI Representation Section -->
+    <section id="demo" class="py-16 sm:py-24 px-4 sm:px-6 border-y border-[var(--border-strong)] bg-[var(--surface)]">
+        <div class="max-w-[1400px] mx-auto reveal">
+            <div class="mockup-window">
+                <div class="mockup-header">
+                    <div class="mockup-dot"></div>
+                    <div class="mockup-dot"></div>
+                    <div class="mockup-dot"></div>
+                    <div class="ml-2 sm:ml-4 mono text-[8px] sm:text-[10px] text-[var(--text-muted)] flex items-center overflow-hidden whitespace-nowrap text-ellipsis">notifyy.exe — local_interface</div>
+                </div>
+                
+                <!-- Simulated Application Interface -->
+                <div class="p-4 sm:p-8 grid grid-cols-1 xl:grid-cols-12 gap-6 sm:gap-8 bg-[var(--bg)] pointer-events-none">
+                    
+                    <!-- App Left Column -->
+                    <div class="xl:col-span-4 flex flex-col gap-6">
+                        <div class="vector-box p-4 sm:p-6 !transform-none !border-[var(--border-strong)]">
+                            <h2 class="!mb-6 !text-[10px]">Add Opportunity</h2>
+                            <div class="demo-input">COMPANY</div>
+                            <div class="demo-input">ROLE / ID</div>
+                            <div class="demo-input">URI (OPTIONAL)</div>
+                            <div class="demo-input mb-6">YYYY-MM-DD</div>
+                            <div class="bg-[var(--primary)] text-[var(--primary-invert)] text-center py-3 mono text-[10px] uppercase font-bold">Track Opportunity</div>
+                        </div>
 
-        <section id="features" class="features">
-            <div class="feature-card">
-                <h3>📋 Company Watchlist</h3>
-                <p>Track companies you frequently apply to. Monitor opportunity count and filter by company instantly.</p>
-            </div>
-            <div class="feature-card">
-                <h3>⏰ Smart Deadlines</h3>
-                <p>Simple date selection with intelligent deadline tracking. No time selection needed—just pick a date.</p>
-            </div>
-            <div class="feature-card">
-                <h3>🔔 Notifications</h3>
-                <p>Intelligent notification scheduling based on urgency. Get reminders at the right time, not too soon, not too late.</p>
-            </div>
-            <div class="feature-card">
-                <h3>🌗 Dark & Light Mode</h3>
-                <p>Automatically respects your system preference. Beautiful in any lighting condition.</p>
-            </div>
-            <div class="feature-card">
-                <h3>📱 Offline First</h3>
-                <p>Works completely offline. Service worker caching keeps you productive wherever you are.</p>
-            </div>
-            <div class="feature-card">
-                <h3>🔒 Privacy Focused</h3>
-                <p>All data stored locally in your browser. No cloud sync, no tracking, no accounts needed.</p>
-            </div>
-            <div class="feature-card">
-                <h3>⚙️ Control Panel</h3>
-                <p>Auto-launch at login, keep window open, and manage app settings with an intuitive control panel.</p>
-            </div>
-            <div class="feature-card">
-                <h3>🎨 Beautiful Design</h3>
-                <p>Modern vector-inspired UI with smooth animations and responsive layout for all devices.</p>
-            </div>
-        </section>
+                        <div class="vector-box p-4 sm:p-6 !transform-none !border-[var(--border-strong)]">
+                            <h2 class="!mb-6 !text-[10px]">Watchlist</h2>
+                            <div class="flex flex-col sm:flex-row gap-2 mb-4">
+                                <div class="demo-input !mb-0 flex-1">ENTITY NAME</div>
+                                <div class="border border-[var(--border-strong)] px-4 py-2 mt-2 sm:mt-0 mono text-[10px] uppercase flex items-center justify-center">Add</div>
+                            </div>
+                            <div class="flex flex-col gap-2 mt-4">
+                                <div class="flex justify-between border-b border-[var(--border)] pb-2">
+                                    <span class="font-bold text-sm">NVIDIA</span>
+                                    <span class="mono text-[10px] text-[var(--text-muted)]">2 OPPS</span>
+                                </div>
+                                <div class="flex justify-between border-b border-[var(--border)] pb-2">
+                                    <span class="font-bold text-sm">Microsoft</span>
+                                    <span class="mono text-[10px] text-[var(--text-muted)]">1 OPP</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-        <section class="specs">
-            <h2>Technical Specs</h2>
-            <div class="specs-grid">
-                <div class="spec-item">
-                    <h4>Platform</h4>
-                    <p>Windows 10+</p>
-                </div>
-                <div class="spec-item">
-                    <h4>Download Size</h4>
-                    <p>11.6 MB</p>
-                </div>
-                <div class="spec-item">
-                    <h4>Installation</h4>
-                    <p>Zero Install</p>
-                </div>
-                <div class="spec-item">
-                    <h4>Version</h4>
-                    <p>2.0</p>
-                </div>
-                <div class="spec-item">
-                    <h4>License</h4>
-                    <p>MIT</p>
-                </div>
-                <div class="spec-item">
-                    <h4>Architecture</h4>
-                    <p>Standalone EXE</p>
+                    <!-- App Right Columns -->
+                    <div class="xl:col-span-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div class="flex flex-col gap-4">
+                            <div class="mono text-[10px] text-[var(--text-muted)] uppercase border-b border-[var(--border)] pb-2">Active Deadlines</div>
+                            
+                            <div class="demo-item demo-urgency-red">
+                                <div class="flex justify-between items-start mb-2">
+                                    <span class="font-bold text-sm">Software Engineer II</span>
+                                    <span class="mono text-[10px] text-[var(--text-muted)]">GOOGLE</span>
+                                </div>
+                                <div class="mono text-lg sm:text-xl my-4 text-[var(--text)] active-timer" data-time="51740">0d 14h 22m 20s</div>
+                                <div class="flex gap-2 mt-4 border-t border-dashed border-[var(--border)] pt-4">
+                                    <span class="mono text-[10px] bg-[var(--border-strong)] text-[var(--bg)] px-2 py-1">APPLIED</span>
+                                    <span class="mono text-[10px] text-[var(--text-muted)] border border-transparent px-2 py-1 hidden sm:inline-block">IGNORE</span>
+                                </div>
+                            </div>
+
+                            <div class="demo-item demo-urgency-orange">
+                                <div class="flex justify-between items-start mb-2">
+                                    <span class="font-bold text-sm">Frontend Developer</span>
+                                    <span class="mono text-[10px] text-[var(--text-muted)]">MICROSOFT</span>
+                                </div>
+                                <div class="mono text-lg sm:text-xl my-4 text-[var(--text)] active-timer" data-time="375300">4d 08h 15m 00s</div>
+                                <div class="flex gap-2 mt-4 border-t border-dashed border-[var(--border)] pt-4">
+                                    <span class="mono text-[10px] bg-[var(--border-strong)] text-[var(--bg)] px-2 py-1">APPLIED</span>
+                                    <span class="mono text-[10px] text-[var(--text-muted)] border border-transparent px-2 py-1 hidden sm:inline-block">IGNORE</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-col gap-4">
+                            <div class="mono text-[10px] text-[var(--text-muted)] uppercase border-b border-[var(--border)] pb-2">Applied / Pending</div>
+                            <div class="demo-item opacity-50 !border-l-[var(--border-strong)] !border-solid">
+                                <div class="flex justify-between items-start mb-2">
+                                    <span class="font-bold text-sm">Systems Architect</span>
+                                    <span class="mono text-[10px] text-[var(--text-muted)]">GOOGLE</span>
+                                </div>
+                                <div class="mono text-lg sm:text-xl my-4 text-[var(--text)]">12d 01h 45m 00s</div>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-col gap-4 md:col-span-2 lg:col-span-1">
+                            <div class="mono text-[10px] text-[var(--text-muted)] uppercase border-b border-[var(--border)] pb-2">Expired / Ignored</div>
+                            <div class="demo-item opacity-30 !bg-transparent !border-l-[var(--border-strong)]">
+                                <div class="flex justify-between items-start mb-2">
+                                    <span class="font-bold text-sm">Data Scientist</span>
+                                    <span class="mono text-[10px] text-[var(--text-muted)]">ANTHROPIC</span>
+                                </div>
+                                <div class="mono text-lg sm:text-xl my-4 text-[var(--text)]">EXPIRED</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </section>
+        </div>
+    </section>
 
-        <section id="download" style="text-align: center; margin: 4rem 0;">
-            <h2 style="font-family: 'JetBrains Mono'; font-size: 2rem; margin-bottom: 1.5rem; color: var(--primary);">Get Started in Seconds</h2>
-            <p style="font-size: 1.1rem; color: var(--text-muted); margin-bottom: 2rem; max-width: 600px; margin-left: auto; margin-right: auto;">Download the executable, extract, and run. No installation, no configuration, no hassle.</p>
-            <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
-                <a href="https://github.com/s2sofficial/notifyy/releases/download/v2.0/Notifyy.exe" class="btn btn-primary" download>Download Notifyy.exe</a>
-                <a href="https://github.com/s2sofficial/notifyy" class="btn" target="_blank">View on GitHub</a>
+    <!-- Specifications Grid -->
+    <section id="features" class="py-16 sm:py-32 px-4 sm:px-6">
+        <div class="max-w-[1400px] mx-auto">
+            <h2 class="reveal mb-10 sm:mb-16">System Specifications</h2>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
+                <!-- Spec 1 -->
+                <div class="vector-box p-6 sm:p-8 reveal delay-100">
+                    <div class="w-12 h-12 mb-6 border border-primary flex items-center justify-center bg-primary/5">
+                        <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="square" stroke-linejoin="miter" stroke-width="1.5" d="M19 21V5H7v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5h2v5m-4 0h4"></path></svg>
+                    </div>
+                    <h3 class="font-bold text-base sm:text-lg text-[var(--text)] border-none pb-0 mb-2 uppercase">Entity Watchlist</h3>
+                    <p class="text-[var(--text-muted)] text-xs sm:text-sm leading-relaxed">
+                        Persistent tracking logic. Monitors opportunity frequencies per entity with integrated filtering parameters.
+                    </p>
+                </div>
+
+                <!-- Spec 2 -->
+                <div class="vector-box p-6 sm:p-8 reveal delay-200">
+                    <div class="w-12 h-12 mb-6 border border-[var(--border-strong)] flex items-center justify-center">
+                        <svg class="w-6 h-6 text-[var(--text)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="square" stroke-linejoin="miter" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14V7H5v14z"></path></svg>
+                    </div>
+                    <h3 class="font-bold text-base sm:text-lg text-[var(--text)] border-none pb-0 mb-2 uppercase">Date-Only Resolution</h3>
+                    <p class="text-[var(--text-muted)] text-xs sm:text-sm leading-relaxed">
+                        Eliminates time-entry friction. Deadlines automatically compile to 11:59:59 PM end-of-day absolute timestamps.
+                    </p>
+                </div>
+
+                <!-- Spec 3 -->
+                <div class="vector-box p-6 sm:p-8 reveal delay-300">
+                    <div class="w-12 h-12 mb-6 border border-primary flex items-center justify-center bg-primary/5">
+                        <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="square" stroke-linejoin="miter" stroke-width="1.5" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+                    </div>
+                    <h3 class="font-bold text-base sm:text-lg text-[var(--text)] border-none pb-0 mb-2 uppercase">Algorithmic Alerts</h3>
+                    <p class="text-[var(--text-muted)] text-xs sm:text-sm leading-relaxed">
+                        Notification scaling: 15+ days triggers 72h intervals, logarithmically shifting to 1h intervals at T-minus 24h.
+                    </p>
+                </div>
+
+                <!-- Spec 4 -->
+                <div class="vector-box p-6 sm:p-8 reveal delay-100 lg:delay-400">
+                    <div class="w-12 h-12 mb-6 border border-[var(--border-strong)] flex items-center justify-center">
+                        <svg class="w-6 h-6 text-[var(--text)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="square" stroke-linejoin="miter" stroke-width="1.5" d="M12 15v2m-6 4h12V15H6v6zM18 15V7a4 4 0 00-8 0v8h8z"></path></svg>
+                    </div>
+                    <h3 class="font-bold text-base sm:text-lg text-[var(--text)] border-none pb-0 mb-2 uppercase">Air-Gapped Storage</h3>
+                    <p class="text-[var(--text-muted)] text-xs sm:text-sm leading-relaxed">
+                        100% localized data persistence. Zero cloud dependency. Eliminates external database vector vulnerabilities.
+                    </p>
+                </div>
             </div>
-        </section>
-    </main>
+        </div>
+    </section>
 
-    <footer>
-        <p>© 2026 Notifyy. Made with ❤️ for deadline trackers everywhere.</p>
-        <p><a href="https://github.com/s2sofficial/notifyy" target="_blank">GitHub Repository</a> • <a href="https://github.com/s2sofficial" target="_blank">S2Sofficial</a></p>
+    <!-- Architecture Section -->
+    <section id="architecture" class="py-16 sm:py-24 px-4 sm:px-6 bg-[var(--border)] border-y border-[var(--border-strong)]">
+        <div class="max-w-[1400px] mx-auto grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+            <div class="reveal">
+                <h2 class="mb-6 border-none before:hidden">System Architecture</h2>
+                <p class="text-[var(--text-muted)] mb-8 leading-relaxed max-w-lg text-sm sm:text-base">
+                    Notifyy executes as a portable application leveraging a Python backend wrapped via PyInstaller, serving a static Progressive Web App (PWA) directly to the localized hardware port.
+                </p>
+                
+                <div class="space-y-6 mono text-xs sm:text-sm">
+                    <div class="flex items-start gap-4">
+                        <div class="w-6 h-6 border border-[var(--border-strong)] flex items-center justify-center shrink-0">01</div>
+                        <div>
+                            <div class="font-bold mb-1 text-[var(--text)]">Backend Daemon</div>
+                            <div class="text-[var(--text-muted)] text-[10px] sm:text-xs leading-relaxed">Python localized server execution. Manages process persistence and registry hooks for auto-start capabilities.</div>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-4">
+                        <div class="w-6 h-6 border border-primary text-primary flex items-center justify-center shrink-0">02</div>
+                        <div>
+                            <div class="font-bold mb-1 text-[var(--text)]">Frontend PWA</div>
+                            <div class="text-[var(--text-muted)] text-[10px] sm:text-xs leading-relaxed">HTML/CSS/JS stack utilizing Service Worker caching algorithms and native Notification API bridging.</div>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-4">
+                        <div class="w-6 h-6 border border-[var(--border-strong)] flex items-center justify-center shrink-0">03</div>
+                        <div>
+                            <div class="font-bold mb-1 text-[var(--text)]">Build Pipeline</div>
+                            <div class="text-[var(--text-muted)] text-[10px] sm:text-xs leading-relaxed">PyInstaller compiler formatting source into a onefile, windowed executable for zero-dependency deployment.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="reveal delay-200">
+                <div class="mockup-window bg-[#050505] border-[var(--border-strong)]">
+                    <div class="mockup-header border-[#222] bg-[#111]">
+                        <div class="mono text-[8px] sm:text-[10px] text-[#888]">Terminal — deployment_tree</div>
+                    </div>
+                    <div class="p-4 sm:p-6 font-mono text-[10px] sm:text-xs overflow-x-auto text-[#aaa] leading-loose">
+                        <div class="text-[#555] mb-4"># File Structure Topology</div>
+                        <div class="text-primary">notify/ <span class="text-[#555]">(this repository)</span></div>
+                        <div class="ml-2 sm:ml-4 border-l border-[#333] pl-2 sm:pl-4">
+                            <div class="text-white">├── Notifyy.exe              <span class="text-[#555]"># ⭐ Standalone executable (ready to run!)</span></div>
+                            <div class="text-white">├── notifyy.py               <span class="text-[#555]"># Python source code</span></div>
+                            <div class="text-white">├── build.ps1                <span class="text-[#555]"># Automated build script</span></div>
+                            <div class="text-white">├── README.md                <span class="text-[#555]"># Complete documentation (this file)</span></div>
+                            <div class="text-white">├── QUICKSTART.md            <span class="text-[#555]"># Quick start guide</span></div>
+                            <div class="text-white">├── VERIFICATION.md          <span class="text-[#555]"># Technical verification report</span></div>
+                            <div class="text-white">├── BUILD_COMPLETE.md        <span class="text-[#555]"># Build & implementation details</span></div>
+                            <div class="text-white">├── .gitignore               <span class="text-[#555]"># Git ignore rules</span></div>
+                            <div class="text-white">└── web/                     <span class="text-[#555]"># Web application files (bundled in exe)</span></div>
+                            <div class="ml-2 sm:ml-4 border-l border-[#333] pl-2 sm:pl-4">
+                                <div class="text-white">├── index.html           <span class="text-[#555]"># UI with companies section</span></div>
+                                <div class="text-white">├── app.js               <span class="text-[#555]"># Logic with v2.0 features</span></div>
+                                <div class="text-white">├── styles.css           <span class="text-[#555]"># Enhanced dark theme</span></div>
+                                <div class="text-white">├── service-worker.js    <span class="text-[#555]"># Offline support</span></div>
+                                <div class="text-white">├── manifest.json        <span class="text-[#555]"># PWA manifest</span></div>
+                            </div>
+                        </div>
+                        <div class="mt-6 text-primary animate-pulse">C:\> _</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Explicit Deployment Steps -->
+    <section id="deployment" class="py-16 sm:py-32 px-4 sm:px-6">
+        <div class="max-w-[1400px] mx-auto">
+            <h2 class="reveal mb-8 sm:mb-12">Deployment Protocol</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
+                <!-- End User Pipeline -->
+                <div class="vector-box p-6 sm:p-8 reveal">
+                    <h3 class="font-bold text-base sm:text-lg mb-6 text-[var(--text)] border-none pb-0 uppercase">End-User Execution</h3>
+                    <div class="mono text-[10px] sm:text-xs text-primary mb-6 border border-primary/30 inline-block px-3 py-1 bg-primary/5">No installation required. Fully portable.</div>
+                    
+                    <ol class="mono text-xs sm:text-sm space-y-4 sm:space-y-6 text-[var(--text-muted)] list-decimal list-inside">
+                        <li class="pl-1 sm:pl-2">Download and extract the <span class="text-primary font-bold">src</span> directory package.</li>
+                        <li class="pl-1 sm:pl-2">Navigate into the extracted folder.</li>
+                        <li class="pl-1 sm:pl-2">Execute <span class="text-[var(--text)] font-bold bg-[var(--border)] px-1">Notifyy.exe</span> to initialize the local daemon.</li>
+                        <li class="pl-1 sm:pl-2">Authorize OS-level notification privileges when prompted via UI.</li>
+                    </ol>
+                    
+                    <a href="https://github.com/s2sofficial/notifyy/releases/latest" target="_blank" class="btn btn-primary w-full mt-8 sm:mt-10 group">
+                        <svg class="w-4 h-4 mr-2 group-hover:translate-y-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                        Download EXE
+                    </a>
+                </div>
+
+                <!-- Developer Pipeline -->
+                <div class="vector-box p-6 sm:p-8 reveal delay-100">
+                    <h3 class="font-bold text-base sm:text-lg mb-6 text-[var(--text)] border-none pb-0 uppercase">Developer Compilation</h3>
+                    <div class="mono text-[10px] sm:text-xs text-[var(--text-muted)] mb-6 border border-[var(--border-strong)] inline-block px-3 py-1">Python environmental dependency required.</div>
+                    
+                    <ol class="mono text-xs sm:text-sm space-y-4 sm:space-y-6 text-[var(--text-muted)] list-decimal list-inside">
+                        <li class="pl-1 sm:pl-2">Clone repository: 
+                            <code class="block mt-2 sm:mt-3 p-2 sm:p-3 bg-[var(--bg)] border border-[var(--border)] text-[var(--text)] break-all text-[10px] sm:text-xs">git clone https://github.com/s2sofficial/notifyy.git</code>
+                        </li>
+                        <li class="pl-1 sm:pl-2">Execute runtime environment directly: 
+                            <code class="block mt-2 sm:mt-3 p-2 sm:p-3 bg-[var(--bg)] border border-[var(--border)] text-[var(--text)] break-all text-[10px] sm:text-xs">python notifyy.py</code>
+                        </li>
+                        <li class="pl-1 sm:pl-2">Compile absolute binary payload: 
+                            <code class="block mt-2 sm:mt-3 p-2 sm:p-3 bg-[var(--bg)] border border-[var(--border)] text-[var(--text)] break-all text-[10px] sm:text-xs">pyinstaller --noconfirm --onefile --windowed --add-data "notify\web;web" --icon="notify\web\icons\icon-192.png" --name="Notifyy" notify\notifyy.py</code>
+                        </li>
+                    </ol>
+                    
+                    <a href="https://github.com/s2sofficial/notifyy" target="_blank" class="btn btn-secondary w-full mt-8 sm:mt-10">View Repository</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer / Links -->
+    <footer class="pt-12 sm:pt-20 pb-8 sm:pb-12 px-4 sm:px-6 border-t border-[var(--border-strong)] bg-[var(--bg)]">
+        <div class="max-w-[1400px] mx-auto flex flex-col items-center text-center reveal">
+            <div class="w-full flex flex-col md:flex-row justify-between items-center gap-4 sm:gap-6 mono text-[8px] sm:text-[10px] text-[var(--text-muted)] uppercase tracking-widest">
+                <div>Notifyy System v2.0.4</div>
+                <div class="flex flex-wrap justify-center gap-4 sm:gap-6">
+                    <a href="https://github.com/s2sofficial/notifyy" target="_blank" class="hover:text-primary transition-colors">Source Code</a>
+                    <a href="https://github.com/s2sofficial" target="_blank" class="hover:text-primary transition-colors">Creator Portfolio</a>
+                </div>
+                <div>TRACK YOUR CAREER.</div>
+            </div>
+        </div>
     </footer>
-</body>
 
+    <script>
+        // Theme Toggle Logic
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        const darkIcon = document.getElementById('theme-icon-dark');
+        const lightIcon = document.getElementById('theme-icon-light');
+
+        function updateThemeIcons() {
+            if (document.documentElement.classList.contains('dark')) {
+                darkIcon.classList.add('hidden');
+                lightIcon.classList.remove('hidden');
+            } else {
+                lightIcon.classList.add('hidden');
+                darkIcon.classList.remove('hidden');
+            }
+        }
+
+        // Set initial icon state based on script in <head>
+        updateThemeIcons();
+
+        themeToggleBtn.addEventListener('click', () => {
+            document.documentElement.classList.toggle('dark');
+            const isDark = document.documentElement.classList.contains('dark');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            updateThemeIcons();
+        });
+
+        // Loading Screen Logic
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                const loader = document.getElementById('loader');
+                loader.classList.add('hidden');
+                setTimeout(() => loader.remove(), 600);
+            }, 1200);
+        });
+
+        // Interface Timers Logic
+        const activeTimers = document.querySelectorAll('.active-timer');
+        setInterval(() => {
+            activeTimers.forEach(timer => {
+                let seconds = parseInt(timer.getAttribute('data-time'));
+                if (seconds > 0) {
+                    seconds--;
+                    timer.setAttribute('data-time', seconds);
+                    
+                    const d = Math.floor(seconds / (3600*24));
+                    const h = Math.floor(seconds % (3600*24) / 3600);
+                    const m = Math.floor(seconds % 3600 / 60);
+                    const s = Math.floor(seconds % 60);
+                    
+                    timer.textContent = `${d}d ${h.toString().padStart(2, '0')}h ${m.toString().padStart(2, '0')}m ${s.toString().padStart(2, '0')}s`;
+                }
+            });
+        }, 1000);
+
+        // Intersection Observer for scroll reveal animations
+        const observerOptions = {
+            root: null,
+            rootMargin: '0px',
+            threshold: 0.15
+        };
+
+        const observer = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.reveal').forEach((element) => {
+            observer.observe(element);
+        });
+    </script>
+</body>
 </html>
