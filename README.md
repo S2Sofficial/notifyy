@@ -1,6 +1,8 @@
-# Notifyy - Deadline Tracking & Company Watchlist
+# Notifyy v2.0 - Deadline Tracking & Company Watchlist
 
 A Progressive Web App for tracking job application deadlines with automatic notifications and company watchlist management.
+
+> **📦 This repository contains everything you need - just download and run `Notifyy.exe`!**
 
 ## ✨ Features
 
@@ -19,12 +21,12 @@ A Progressive Web App for tracking job application deadlines with automatic noti
 
 ### For End Users (Executable)
 
-1. **Copy the `src` folder** to any location on your computer (e.g., `C:\Notifyy\`)
+1. **Download this repository** (or just download `Notifyy.exe`)
 2. **Run `Notifyy.exe`** - Double-click to launch
 3. **Enable Notifications** - Click the button when prompted
 4. **Start Tracking** - Add opportunities and companies
 
-That's it! No installation, no Python required.
+That's it! No installation, no Python required. The entire app is self-contained.
 
 ### For Developers (Python Source)
 
@@ -35,6 +37,11 @@ That's it! No installation, no Python required.
 **Run from source:**
 ```powershell
 python notifyy.py
+```
+
+**Build executable:**
+```powershell
+.\build.ps1
 ```
 
 The app will:
@@ -115,21 +122,28 @@ The control panel provides:
 - **Open Notifyy** - Opens the app in your browser
 - **Exit** - Closes the application
 
-## 📂 File Structure
+## 📂 Repository Structure
 
 ```
-src/
-├── Notifyy.exe          # Standalone executable (no Python needed)
-├── notifyy.py           # Python source code
-├── README.md            # This file
-└── web/                 # Web application files
-    ├── index.html       # UI structure
-    ├── styles.css       # Enhanced dark theme
-    ├── app.js           # App logic & notifications
-    ├── service-worker.js # Offline support
-    ├── manifest.json    # PWA manifest
-    └── icons/           # App icons
+notify/ (this repository)
+├── Notifyy.exe              # ⭐ Standalone executable (ready to run!)
+├── notifyy.py               # Python source code
+├── build.ps1                # Automated build script
+├── README.md                # Complete documentation (this file)
+├── QUICKSTART.md            # Quick start guide
+├── VERIFICATION.md          # Technical verification report
+├── BUILD_COMPLETE.md        # Build & implementation details
+├── .gitignore               # Git ignore rules
+└── web/                     # Web application files (bundled in exe)
+    ├── index.html           # UI with companies section
+    ├── app.js               # Logic with v2.0 features
+    ├── styles.css           # Enhanced dark theme
+    ├── service-worker.js    # Offline support
+    ├── manifest.json        # PWA manifest
+    └── icons/               # App icons (192px, 512px)
 ```
+
+**Everything you need is in this repository!**
 
 ## 💾 Data Storage
 
@@ -215,17 +229,21 @@ src/
 
 ## 🚢 Distribution & Transfer
 
-The `src` folder is fully portable:
+This repository is fully portable:
 
-1. **Copy the entire `src` folder** to:
+1. **Clone or download this repository** to:
+   - Your computer
    - USB drive
    - Network share
    - Another computer
-   - Cloud storage (for transfer only)
 
-2. **Run on any Windows 10+ machine** - No installation needed
+2. **Run `Notifyy.exe` on any Windows 10+ machine** - No installation needed
 
-3. **Data portability**: Copy the `web` folder to preserve same data across devices (if browser data is shared)
+3. **Data portability**: Each computer has separate browser data (localStorage). Use backup/restore to sync data between machines.
+
+**To share with others:**
+- Share the repository link: https://github.com/S2Sofficial/notify
+- Or send just the `Notifyy.exe` and `web` folder
 
 ## 🛠️ Building from Source
 

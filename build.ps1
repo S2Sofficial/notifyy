@@ -1,5 +1,5 @@
-# Build Notifyy Executable
-# Run this script to rebuild the executable after making changes
+# Build Notifyy Executable v2.0
+# Run this script from the repository root to rebuild the executable
 
 Write-Host "==================================" -ForegroundColor Cyan
 Write-Host "  Notifyy Build Script v2.0" -ForegroundColor Cyan
@@ -20,10 +20,6 @@ Write-Host "Activating virtual environment..." -ForegroundColor Yellow
 Write-Host "Installing dependencies..." -ForegroundColor Yellow
 python -m pip install --upgrade pip pyinstaller pillow
 
-# Sync web files from root to notify/web
-Write-Host "Syncing web files..." -ForegroundColor Yellow
-Copy-Item -Path "web\*" -Destination "notify\web\" -Recurse -Force
-
 # Clean previous builds
 Write-Host "Cleaning previous builds..." -ForegroundColor Yellow
 if (Test-Path "dist") { Remove-Item -Recurse -Force "dist" }
@@ -39,10 +35,10 @@ python -m PyInstaller `
     --noconfirm `
     --onefile `
     --windowed `
-    --add-data "notify\web;web" `
-    --icon="notify\web\icons\icon-192.png" `
+    --add-data "web;web" `
+    --icon="web\icons\icon-192.png" `
     --name="Notifyy" `
-    notify\notifyy.py
+    notifyy.py
 
 # Check if build succeeded
 if (Test-Path "dist\Notifyy.exe") {
@@ -55,28 +51,23 @@ if (Test-Path "dist\Notifyy.exe") {
     Write-Host "Size: $((Get-Item 'dist\Notifyy.exe').Length / 1MB) MB" -ForegroundColor Gray
     Write-Host ""
     
-    # Update src folder
-    Write-Host "Updating src folder..." -ForegroundColor Yellow
-    if (-not (Test-Path "src")) { New-Item -ItemType Directory -Force -Path "src" | Out-Null }
-    if (-not (Test-Path "src\web")) { New-Item -ItemType Directory -Force -Path "src\web" | Out-Null }
+    # Move executable to repository root
+    Write-Host "Moving executable to repository root..." -ForegroundColor Yellow
+    Copy-Item -Path "dist\Notifyy.exe" -Destination "." -Force
     
-    Copy-Item -Path "dist\Notifyy.exe" -Destination "src\" -Force
-    Copy-Item -Path "web\*" -Destination "src\web\" -Recurse -Force
-    Copy-Item -Path "notifyy.py" -Destination "src\" -Force
-    
-    Write-Host "✓ src folder updated with latest build" -ForegroundColor Green
+    Write-Host "✓ Notifyy.exe updated in repository root" -ForegroundColor Green
     Write-Host ""
     
     # Offer to run
     $run = Read-Host "Run Notifyy.exe now? (y/n)"
     if ($run -eq "y" -or $run -eq "Y") {
         Write-Host "Launching Notifyy..." -ForegroundColor Cyan
-        Start-Process "dist\Notifyy.exe"
+        Start-Process ".\Notifyy.exe"
     }
     
     Write-Host ""
-    Write-Host "Distribution folder: .\src\" -ForegroundColor Cyan
-    Write-Host "Share the 'src' folder with end users." -ForegroundColor Gray
+    Write-Host "✓ Build complete!" -ForegroundColor Green
+    Write-Host "Repository is ready to commit and push." -ForegroundColor Gray
 } else {
     Write-Host ""
     Write-Host "==================================" -ForegroundColor Red
