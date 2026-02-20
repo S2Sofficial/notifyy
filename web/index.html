@@ -1,64 +1,630 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Notifyy</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Notifyy - Deadline Tracker</title>
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#1e1e1e">
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#0a0a0a" media="(prefers-color-scheme: dark)">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            /* Light Mode (Blueprint / Vector Style) */
+            --bg: #f4f4f2;
+            --surface: #ffffff;
+            --border: #e0e0e0;
+            --border-strong: #1a1a1a;
+            --text: #1a1a1a;
+            --text-muted: #666666;
+            --primary: #f05a28;
+            /* Geometric Orange */
+            --primary-hover: #d04010;
+            --primary-invert: #ffffff;
+            --grid-line: rgba(240, 90, 40, 0.1);
+
+            /* Status Colors */
+            --green: #00a859;
+            --orange: #f05a28;
+            --red: #e63946;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                /* Dark Mode */
+                --bg: #0a0a0a;
+                --surface: #121212;
+                --border: #2a2a2a;
+                --border-strong: #444444;
+                --text: #ffffff;
+                --text-muted: #888888;
+                --primary: #ff5e28;
+                --primary-hover: #ff7a4d;
+                --primary-invert: #000000;
+                --grid-line: rgba(255, 255, 255, 0.03);
+
+                --green: #00ff88;
+                --orange: #ff5e28;
+                --red: #ff3344;
+            }
+        }
+
+        body {
+            animation: pageEnter 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes pageEnter {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'Inter', system-ui, sans-serif;
+            margin: 0;
+            padding: 0;
+            -webkit-font-smoothing: antialiased;
+            text-rendering: optimizeLegibility;
+            /* Architectural Grid Background */
+            background-image:
+                linear-gradient(var(--grid-line) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+            background-size: 32px 32px;
+            background-position: var(--grid-x, 0px) var(--grid-y, 0px);
+            transition: background-color 0.4s ease, color 0.4s ease;
+        }
+
+        @keyframes slideUpFade {
+            0% {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-in {
+            animation: slideUpFade 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
+        }
+
+        .delay-1 {
+            animation-delay: 0.1s;
+        }
+
+        .delay-2 {
+            animation-delay: 0.2s;
+        }
+
+        .delay-3 {
+            animation-delay: 0.3s;
+        }
+
+        .delay-4 {
+            animation-delay: 0.4s;
+        }
+
+        /* Vector Nodes (Squares at corners) */
+        .vector-box {
+            position: relative;
+            background-color: var(--surface);
+            border: 1px solid var(--border-strong);
+        }
+
+        .vector-box::before,
+        .vector-box::after {
+            content: '';
+            position: absolute;
+            width: 5px;
+            height: 5px;
+            background-color: var(--bg);
+            border: 1px solid var(--primary);
+            z-index: 10;
+        }
+
+        .vector-box::before {
+            top: -3px;
+            left: -3px;
+            box-shadow: calc(100% + 4px) 0 0 0 var(--bg), calc(100% + 4px) 0 0 0 var(--primary) inset;
+        }
+
+        .vector-box::after {
+            bottom: -3px;
+            left: -3px;
+            box-shadow: calc(100% + 4px) 0 0 0 var(--bg), calc(100% + 4px) 0 0 0 var(--primary) inset;
+        }
+
+        /* Typography */
+        h1,
+        h2,
+        h3,
+        .mono {
+            font-family: 'JetBrains Mono', monospace;
+            text-transform: uppercase;
+        }
+
+        h2 {
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            margin-bottom: 1.5rem;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        h2::before {
+            content: '';
+            display: block;
+            width: 1.5rem;
+            height: 1px;
+            background-color: var(--primary);
+        }
+
+        h3 {
+            font-size: 0.75rem;
+            font-weight: 500;
+            letter-spacing: 0.05em;
+            margin-bottom: 1rem;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.5rem;
+        }
+
+        /* Form Controls */
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            margin-bottom: 1.5rem;
+        }
+
+        @media (min-width: 640px) {
+            .form-group.row {
+                flex-direction: row;
+                gap: 1rem;
+            }
+        }
+
+        input {
+            background-color: transparent;
+            border: none;
+            border-bottom: 1px solid var(--border-strong);
+            color: var(--text);
+            padding: 0.75rem 0;
+            width: 100%;
+            outline: none;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            border-radius: 0;
+            transition: border-color 0.2s;
+        }
+
+        input:focus {
+            border-color: var(--primary);
+        }
+
+        input::placeholder {
+            color: var(--text-muted);
+            opacity: 0.7;
+        }
+
+        /* Interactive Elements */
+        button {
+            transition: transform 0.15s ease,
+                background-color 0.2s ease,
+                border-color 0.2s ease,
+                box-shadow 0.2s ease;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            transform: translateY(1px) scale(0.98);
+        }
+
+        button {
+            font-family: 'JetBrains Mono', monospace;
+            cursor: pointer;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-size: 0.75rem;
+            padding: 0.75rem 1.5rem;
+            border: 1px solid var(--border-strong);
+            border-radius: 0;
+            background: transparent;
+            color: var(--text);
+            transition: all 0.15s ease-out;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            border-color: var(--primary);
+            color: var(--primary-invert);
+            width: 100%;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+            border-color: var(--primary-hover);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .btn-sm {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.7rem;
+        }
+
+        /* App Logic Injectors */
+        .list-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .item {
+            background-color: var(--surface);
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--border-strong);
+            padding: 1.25rem;
+            transition: transform 0.2s;
+        }
+
+        .item:hover {
+            border-color: var(--border-strong);
+        }
+
+        .item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 0.5rem;
+            gap: 1rem;
+        }
+
+        .company {
+            font-weight: 600;
+            font-size: 1rem;
+            letter-spacing: -0.01em;
+        }
+
+        .role {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            text-align: right;
+        }
+
+        .countdown {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.5rem;
+            font-weight: 400;
+            letter-spacing: -0.05em;
+            margin: 1rem 0;
+            color: var(--text);
+        }
+
+        .countdown {
+            font-variant-numeric: tabular-nums;
+            transition: letter-spacing 0.3s ease, transform 0.2s ease;
+        }
+
+        .item:hover .countdown {
+            letter-spacing: -0.08em;
+            transform: scale(1.05);
+        }
+
+        .actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1.25rem;
+        }
+
+        /* Dynamic Status Injection */
+        .urgency-green {
+            border-left-color: var(--green);
+        }
+
+        .urgency-orange {
+            border-left-color: var(--orange);
+        }
+
+        .urgency-red {
+            border-left-color: var(--red);
+        }
+
+        .status-applied {
+            opacity: 0.5;
+            border-style: solid;
+            border-left-color: var(--border-strong);
+        }
+
+        .status-applied:hover {
+            opacity: 1;
+        }
+
+        .status-expired {
+            opacity: 0.3;
+            background-color: transparent;
+        }
+
+        .btn-apply {
+            background-color: var(--border-strong);
+            color: var(--bg);
+            border-color: var(--border-strong);
+        }
+
+        .btn-apply:hover {
+            background-color: var(--text);
+            border-color: var(--text);
+            color: var(--bg);
+        }
+
+        .btn-ignore {
+            background-color: transparent;
+            color: var(--text-muted);
+            border-color: transparent;
+        }
+
+        .btn-ignore:hover {
+            color: var(--text);
+            background-color: var(--border);
+        }
+
+        a {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            text-decoration: none;
+            text-transform: uppercase;
+            color: var(--primary);
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        /* Base Logo Structure */
+        .brand-logo {
+            display: inline-grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            width: 24px;
+            height: 24px;
+            gap: 2px;
+            transform: rotate(45deg);
+            transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+                filter 0.6s ease;
+        }
+
+        .brand-logo:hover {
+            transform: rotate(405deg) scale(1.15);
+            filter: drop-shadow(0 0 12px var(--primary));
+        }
+
+        .brand-logo span {
+            background-color: var(--primary);
+            transition: opacity 0.3s;
+        }
+
+        .brand-logo span:nth-child(1) {
+            opacity: 0.4;
+        }
+
+        .brand-logo span:nth-child(2) {
+            opacity: 0.6;
+        }
+
+        .brand-logo span:nth-child(3) {
+            opacity: 0.8;
+        }
+
+        .brand-logo span:nth-child(4) {
+            opacity: 1;
+            background-color: transparent;
+            border: 2px solid var(--primary);
+        }
+
+        /* Loading Screen Container */
+        #loader {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            background-color: var(--bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.6s;
+        }
+
+        #loader.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        /* Entrance Scale Animation */
+        .loader-logo {
+            transform: scale(2);
+            animation: initScale 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes initScale {
+            0% {
+                transform: scale(1.5) rotate(45deg);
+                opacity: 0;
+            }
+
+            50% {
+                transform: scale(2.2) rotate(45deg);
+                opacity: 1;
+            }
+
+            100% {
+                transform: scale(2) rotate(45deg);
+                opacity: 1;
+            }
+        }
+
+        /* Sequential Pulse Animation */
+        .loader-logo span {
+            animation: pulseLogo 0.8s infinite alternate;
+        }
+
+        .loader-logo span:nth-child(1) {
+            animation-delay: 0s;
+        }
+
+        .loader-logo span:nth-child(2) {
+            animation-delay: 0.15s;
+        }
+
+        .loader-logo span:nth-child(3) {
+            animation-delay: 0.3s;
+        }
+
+        .loader-logo span:nth-child(4) {
+            animation-delay: 0.45s;
+        }
+
+        @keyframes pulseLogo {
+            0% {
+                opacity: 0.2;
+                transform: scale(0.95);
+            }
+
+            100% {
+                opacity: 1;
+                transform: scale(1.05);
+            }
+        }
+    </style>
 </head>
-<body>
-    <header>
-        <h1>Notifyy</h1>
-        <button id="enable-notifications" class="btn-secondary">Enable Notifications</button>
+
+<body class="min-h-screen flex flex-col">
+
+    <!-- Loading Screen -->
+    <div id="loader">
+        <div class="brand-logo loader-logo">
+            <span></span><span></span><span></span><span></span>
+        </div>
+    </div>
+
+    <header
+        class="border-b border-[var(--border)] bg-[var(--surface)] px-6 py-4 flex justify-between items-center sticky top-0 z-50 transition-colors duration-500">
+        <div class="flex items-center gap-4">
+            <div class="brand-logo">
+                <span></span><span></span><span></span><span></span>
+            </div>
+            <h1 class="text-xl font-bold tracking-[0.1em] m-0 leading-none">Notifyy</h1>
+        </div>
+        <div class="flex items-center gap-3">
+            <a href="https://github.com/S2Sofficial/notifyy" target="_blank" class="btn-secondary btn-sm mono"
+                style="text-decoration: none;">Contact Us</a>
+            <button id="enable-notifications" class="btn-secondary btn-sm mono">Enable Notifications</button>
+        </div>
     </header>
 
-    <main>
-        <section id="add-form" class="card">
-            <h2>Add Opportunity</h2>
-            <form id="job-form">
-                <div class="form-group">
-                    <input type="text" id="company" placeholder="Company Name" required>
-                    <input type="text" id="role" placeholder="Role/Title" required>
-                </div>
-                <div class="form-group">
-                    <input type="url" id="link" placeholder="Application Link (optional)">
-                    <input type="date" id="deadline" required>
-                </div>
-                <button type="submit" class="btn-primary">Track Opportunity</button>
-            </form>
-        </section>
+    <main
+        class="flex-1 max-w-[1400px] w-full mx-auto p-6 md:p-8 grid grid-cols-1 xl:grid-cols-12 gap-8 lg:gap-12 items-start">
 
-        <section id="companies" class="card">
-            <h2>Tracked Companies</h2>
-            <form id="company-form">
-                <div class="form-group">
-                    <input type="text" id="company-name" placeholder="Company to track" required>
-                    <button type="submit" class="btn-secondary">Add Company</button>
-                </div>
-            </form>
-            <div id="companies-list" class="list-container"></div>
-        </section>
+        <div class="xl:col-span-4 flex flex-col gap-8 sticky top-24">
 
-        <section id="dashboard">
-            <div class="column">
+            <section id="add-form" class="vector-box p-6 md:p-8 animate-in delay-1">
+                <h2>Add Opportunity</h2>
+                <form id="job-form">
+                    <div class="form-group row">
+                        <input type="text" id="company" placeholder="COMPANY" required>
+                        <input type="text" id="role" placeholder="ROLE / ID" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="url" id="link" placeholder="URI (OPTIONAL)">
+                    </div>
+                    <div class="form-group mb-8">
+                        <input type="date" id="deadline" required>
+                    </div>
+                    <button type="submit" class="btn-primary">Track Opportunity</button>
+                </form>
+            </section>
+
+            <section id="companies" class="vector-box p-6 md:p-8 animate-in delay-2">
+                <h2>Watchlist</h2>
+                <form id="company-form" class="mb-6">
+                    <div class="form-group row mb-0 items-end gap-1">
+                        <input type="text" id="company-name" placeholder="ENTITY NAME" required class="flex-1">
+                        <button type="submit" class="btn-secondary">Add</button>
+                    </div>
+                </form>
+                <div id="companies-list" class="list-container"></div>
+            </section>
+        </div>
+
+        <section id="dashboard" class="xl:col-span-8 grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-6 items-start">
+            <div class="column animate-in delay-2">
                 <h3>Active Deadlines</h3>
                 <div id="list-active" class="list-container"></div>
             </div>
-            
-            <div class="column">
+
+            <div class="column animate-in delay-3">
                 <h3>Applied / Pending</h3>
                 <div id="list-applied" class="list-container"></div>
             </div>
 
-            <div class="column">
+            <div class="column animate-in delay-4">
                 <h3>Expired / Ignored</h3>
                 <div id="list-expired" class="list-container"></div>
             </div>
         </section>
+
     </main>
 
+    <script>
+        function updateAccentIntensity() {
+            const urgent = document.querySelectorAll('.urgency-red').length;
+            const intensity = Math.min(urgent * 0.1, 0.4);
+            document.documentElement.style.setProperty(
+                '--grid-line',
+                `rgba(240, 90, 40, ${0.05 + intensity})`
+            );
+        }
+
+        setInterval(updateAccentIntensity, 2000);
+    </script>
+    <script>
+        // Hide loader after page loads
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                document.getElementById('loader').classList.add('hidden');
+            }, 1200);
+        });
+    </script>
     <script src="app.js"></script>
 </body>
+
 </html>
