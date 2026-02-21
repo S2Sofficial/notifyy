@@ -10,6 +10,14 @@ import tkinter as tk
 from tkinter import messagebox
 import winreg
 
+try:
+    import pystray
+    from PIL import Image, ImageDraw
+except ImportError:
+    pystray = None
+    Image = None
+    ImageDraw = None
+
 # Get the directory where the app is running from
 if getattr(sys, 'frozen', False):
     APP_DIR = os.path.dirname(sys.executable)
@@ -18,6 +26,9 @@ else:
 
 # Web files directory
 WEB_DIR = os.path.join(APP_DIR, 'web')
+ICON_DIR = os.path.join(WEB_DIR, 'icons')
+APP_ICON_ICO = os.path.join(ICON_DIR, 'favicon.ico')
+APP_ICON_PNG = os.path.join(ICON_DIR, 'web-app-manifest-192x192.png')
 
 # Config file for startup preference
 CONFIG_FILE = os.path.join(APP_DIR, 'notifyy_config.json')
@@ -84,7 +95,7 @@ def load_config():
                 return json.load(f)
         except:
             pass
-    return {'startup_enabled': True, 'minimized': False, 'keep_open': False}
+    return {'startup_enabled': True}
 
 def save_config(config):
     """Save configuration"""
@@ -93,6 +104,22 @@ def save_config(config):
             json.dump(config, f, indent=2)
     except:
         pass
+
+def create_tray_image():
+    """Create tray image using app icon from icons folder"""
+    if os.path.exists(APP_ICON_ICO):
+        return Image.open(APP_ICON_ICO)
+    if os.path.exists(APP_ICON_PNG):
+        return Image.open(APP_ICON_PNG)
+
+    image = Image.new('RGBA', (64, 64), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(image)
+    orange = (240, 90, 40, 255)
+    draw.rectangle((6, 6, 28, 28), fill=(240, 90, 40, 120), outline=orange, width=2)
+    draw.rectangle((36, 6, 58, 28), fill=(240, 90, 40, 160), outline=orange, width=2)
+    draw.rectangle((6, 36, 28, 58), fill=(240, 90, 40, 220), outline=orange, width=2)
+    draw.rectangle((36, 36, 58, 58), outline=orange, width=3)
+    return image
 
 def start_server(port=8000):
     """Start HTTP server in a background thread"""
@@ -107,12 +134,17 @@ def start_server(port=8000):
             return start_server(port + 1)
         return False, None
 
-def create_control_window():
+def create_control_window(port, exit_callback):
     """Create system tray or control window"""
     root = tk.Tk()
     root.title("Notifyy Control Panel")
-    root.geometry("400x200")
+    root.geometry("430x190")
     root.resizable(False, False)
+    if os.path.exists(APP_ICON_ICO):
+        try:
+            root.iconbitmap(APP_ICON_ICO)
+        except Exception:
+            pass
     
     # Center window
     root.update_idletasks()
@@ -131,7 +163,7 @@ def create_control_window():
     title_label.pack(pady=10)
     
     # Status
-    status_label = tk.Label(root, text="Server is running on http://localhost:PORT", 
+    status_label = tk.Label(root, text=f"Server is running on http://localhost:{port}", 
                            font=("Arial", 10), fg="green")
     status_label.pack(pady=5)
     
@@ -158,56 +190,65 @@ def create_control_window():
                                    variable=startup_var, command=toggle_startup,
                                    font=("Arial", 10))
     startup_check.pack(pady=15)
-
-    # Keep-open checkbox (prevent closing when enabled)
-    keep_open_var = tk.BooleanVar(value=config.get('keep_open', False))
-    def toggle_keep_open():
-        config['keep_open'] = keep_open_var.get()
-        save_config(config)
-        if keep_open_var.get():
-            messagebox.showinfo("Info", "Notifyy will remain open. Close is disabled.")
-        else:
-            messagebox.showinfo("Info", "Close allowed. You can exit the control panel.")
-
-    keep_open_check = tk.Checkbutton(root, text="Keep control window open (prevent closing)",
-                                     variable=keep_open_var, command=toggle_keep_open,
-                                     font=("Arial", 10))
-    keep_open_check.pack(pady=5)
     
     # Buttons
     button_frame = tk.Frame(root)
-    button_frame.pack(pady=15)
+    button_frame.pack(pady=10)
     
     def open_app():
-        webbrowser.open('http://localhost:8000')
+        webbrowser.open(f'http://localhost:{port}')
     
     open_btn = tk.Button(button_frame, text="Open Notifyy", command=open_app, 
                          width=15, bg="#bb86fc", fg="black", font=("Arial", 10, "bold"))
     open_btn.pack(side=tk.LEFT, padx=5)
     
-    def exit_app():
-        root.destroy()
-    
-    exit_btn = tk.Button(button_frame, text="Exit", command=exit_app, 
+    exit_btn = tk.Button(button_frame, text="Exit", command=exit_callback, 
                          width=15, bg="#333", fg="white", font=("Arial", 10, "bold"))
     exit_btn.pack(side=tk.LEFT, padx=5)
     
     # Info label
-    info_label = tk.Label(root, text="Close this window to minimize to system tray", 
+    info_label = tk.Label(root, text="This panel stays hidden in system tray until opened manually", 
                          font=("Arial", 8), fg="gray")
     info_label.pack(pady=10)
 
-    # Handle close behavior depending on keep_open setting
+    # Close always hides to tray
     def on_close():
-        if keep_open_var.get():
-            messagebox.showinfo("Notifyy", "Keep-open is enabled. The window will remain open.")
-            return
-        else:
-            root.destroy()
+        root.withdraw()
 
     root.protocol('WM_DELETE_WINDOW', on_close)
     
     return root
+
+def create_tray_icon(root, port, exit_callback):
+    """Create and run tray icon with menu actions"""
+    if pystray is None or Image is None:
+        return None
+
+    def show_panel(icon, item):
+        def _show():
+            root.deiconify()
+            root.lift()
+            root.focus_force()
+        root.after(0, _show)
+
+    def open_notifyy(icon, item):
+        webbrowser.open(f'http://localhost:{port}')
+
+    def quit_notifyy(icon, item):
+        root.after(0, exit_callback)
+
+    tray_menu = pystray.Menu(
+        pystray.MenuItem('Open Notifyy', open_notifyy),
+        pystray.MenuItem('Open Control Panel', show_panel),
+        pystray.MenuItem('Exit', quit_notifyy)
+    )
+
+    tray_icon = pystray.Icon('Notifyy', create_tray_image(), 'Notifyy', tray_menu)
+    try:
+        tray_icon.run_detached()
+    except Exception:
+        threading.Thread(target=tray_icon.run, daemon=True).start()
+    return tray_icon
 
 def main():
     """Main entry point"""
@@ -222,21 +263,30 @@ def main():
         messagebox.showerror("Error", "Failed to start server. Port may be in use.")
         sys.exit(1)
     
-    # Load config and check if app should run minimized
-    config = load_config()
-    minimized = config.get('minimized', False)
-    
-    # Create window
-    root = create_control_window()
-    
-    # Update status with actual port
-    for child in root.winfo_children():
-        if isinstance(child, tk.Label) and "Server is running" in child.cget("text"):
-            child.config(text=f"Server is running on http://localhost:{port}")
-    
-    if not minimized:
-        webbrowser.open(f'http://localhost:{port}')
-    
+    tray_ref = {'icon': None}
+
+    root = None
+
+    def exit_app():
+        if tray_ref['icon'] is not None:
+            tray_ref['icon'].stop()
+            tray_ref['icon'] = None
+        if root is not None and root.winfo_exists():
+            root.destroy()
+
+    root = create_control_window(port, exit_app)
+
+    tray_ref['icon'] = create_tray_icon(root, port, exit_app)
+    if tray_ref['icon'] is None:
+        messagebox.showwarning(
+            "Tray Unavailable",
+            "System tray support is unavailable. Control panel will stay visible."
+        )
+    else:
+        root.withdraw()
+
+    webbrowser.open(f'http://localhost:{port}')
+
     root.mainloop()
 
 if __name__ == '__main__':

@@ -19,6 +19,9 @@ const listActive = document.getElementById('list-active');
 const listApplied = document.getElementById('list-applied');
 const listExpired = document.getElementById('list-expired');
 const btnNotify = document.getElementById('enable-notifications');
+const btnExport = document.getElementById('export-data');
+const btnImport = document.getElementById('import-data');
+const inputImportFile = document.getElementById('import-data-file');
 
 // --- Initialization ---
 
@@ -31,7 +34,7 @@ async function init() {
     // Register Service Worker
     if ('serviceWorker' in navigator) {
         try {
-            const reg = await navigator.serviceWorker.register('./service-worker.js');
+            const reg = await navigator.serviceWorker.register('./service-worker.js?v=20260221-2');
             // Try Periodic Sync (Progressive Enhancement)
             if ('periodicSync' in reg) {
                 const status = await navigator.permissions.query({ name: 'periodic-background-sync' });
@@ -59,10 +62,40 @@ async function init() {
 function loadCompanies() {
     try {
         const raw = localStorage.getItem(STORAGE_COMPANIES);
-        companies = raw ? JSON.parse(raw) : [];
+        const parsed = raw ? JSON.parse(raw) : [];
+        companies = Array.isArray(parsed)
+            ? parsed.map(normalizeCompanyEntry).filter(Boolean)
+            : [];
     } catch (e) {
         companies = [];
     }
+}
+
+function normalizeCompanyEntry(entry) {
+    if (typeof entry === 'string') {
+        return {
+            name: entry,
+            link: '',
+            createdAt: 0
+        };
+    }
+
+    if (entry && typeof entry === 'object' && typeof entry.name === 'string') {
+        return {
+            name: entry.name,
+            link: typeof entry.link === 'string' ? entry.link : '',
+            createdAt: Number(entry.createdAt) || 0
+        };
+    }
+
+    return null;
+}
+
+function companyUrl(link) {
+    const trimmed = (link || '').trim();
+    if (!trimmed) return '';
+    if (/^https?:\/\//i.test(trimmed)) return trimmed;
+    return `https://${trimmed}`;
 }
 
 function saveCompanies() {
@@ -75,30 +108,62 @@ function renderCompanies() {
     const container = document.getElementById('companies-list');
     if (!container) return;
     container.innerHTML = '';
-    companies.forEach((c) => {
+
+    const sorted = [...companies].sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+
+    sorted.forEach((company) => {
         const div = document.createElement('div');
         div.className = 'company-item item';
-        const count = opportunities.filter(o => o.company === c).length;
-        div.innerHTML = `
-            <div class="item-header"><span class="company">${c}</span>
-              <span class="role">${count} opp(s)</span></div>
-            <div class="actions">
-                <button class="btn-sm btn-primary" onclick="filterByCompany('${c}')">Show</button>
-                <button class="btn-sm btn-ignore" onclick="removeCompany('${c}')">Remove</button>
-            </div>`;
+
+        const header = document.createElement('div');
+        header.className = 'item-header';
+
+        const nameEl = document.createElement('span');
+        nameEl.className = 'company';
+        nameEl.textContent = company.name;
+        header.appendChild(nameEl);
+
+        div.appendChild(header);
+
+        if (company.link) {
+            const linkEl = document.createElement('div');
+            linkEl.className = 'company-link';
+            linkEl.textContent = companyUrl(company.link);
+            div.appendChild(linkEl);
+        }
+
+        const actions = document.createElement('div');
+        actions.className = 'actions';
+
+        const openBtn = document.createElement('button');
+        openBtn.className = 'btn-sm btn-primary';
+        openBtn.textContent = 'Open';
+        if (company.link) {
+            openBtn.addEventListener('click', () => {
+                window.open(companyUrl(company.link), '_blank', 'noopener,noreferrer');
+            });
+        } else {
+            openBtn.disabled = true;
+            openBtn.title = 'No company page set';
+            openBtn.style.opacity = '0.5';
+            openBtn.style.cursor = 'not-allowed';
+        }
+
+        const removeBtn = document.createElement('button');
+        removeBtn.className = 'btn-sm btn-ignore';
+        removeBtn.textContent = 'Remove';
+        removeBtn.addEventListener('click', () => removeCompany(company.name));
+
+        actions.appendChild(openBtn);
+        actions.appendChild(removeBtn);
+        div.appendChild(actions);
+
         container.appendChild(div);
     });
 }
 
-window.filterByCompany = (name) => {
-    const filtered = opportunities.filter(o => o.company === name);
-    // temporarily render filtered list in active column
-    listActive.innerHTML = '';
-    filtered.forEach(opp => listActive.appendChild(createItem(opp)));
-};
-
 window.removeCompany = (name) => {
-    companies = companies.filter(c => c !== name);
+    companies = companies.filter(c => c.name !== name);
     saveCompanies();
     renderCompanies();
 };
@@ -152,6 +217,94 @@ btnNotify.addEventListener('click', async () => {
     }
 });
 
+if (btnExport) {
+    btnExport.addEventListener('click', () => {
+        const backup = {
+            app: 'Notifyy',
+            version: '2.1',
+            exportedAt: new Date().toISOString(),
+            opportunities,
+            companies
+        };
+
+        const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const anchor = document.createElement('a');
+        const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+
+        anchor.href = url;
+        anchor.download = `notifyy-backup-${stamp}.json`;
+        document.body.appendChild(anchor);
+        anchor.click();
+        anchor.remove();
+
+        URL.revokeObjectURL(url);
+    });
+}
+
+function normalizeOpportunityEntry(entry) {
+    if (!entry || typeof entry !== 'object') return null;
+    if (typeof entry.company !== 'string') return null;
+    if (!Number.isFinite(Number(entry.deadline))) return null;
+
+    const cleanStatus = ['pending', 'applied', 'ignored'].includes(entry.status)
+        ? entry.status
+        : 'pending';
+
+    return {
+        id: typeof entry.id === 'string' && entry.id ? entry.id : crypto.randomUUID(),
+        company: entry.company,
+        role: typeof entry.role === 'string' ? entry.role : '',
+        link: typeof entry.link === 'string' ? entry.link : '',
+        deadline: Number(entry.deadline),
+        status: cleanStatus,
+        createdAt: Number(entry.createdAt) || Date.now(),
+        lastNotifiedAt: Number(entry.lastNotifiedAt) || 0
+    };
+}
+
+function importBackupFromText(jsonText) {
+    const payload = JSON.parse(jsonText);
+
+    const importedOppsRaw = Array.isArray(payload)
+        ? payload
+        : (Array.isArray(payload.opportunities) ? payload.opportunities : []);
+
+    const importedCompaniesRaw = Array.isArray(payload.companies)
+        ? payload.companies
+        : [];
+
+    const normalizedOpps = importedOppsRaw.map(normalizeOpportunityEntry).filter(Boolean);
+    const normalizedCompanies = importedCompaniesRaw.map(normalizeCompanyEntry).filter(Boolean);
+
+    opportunities = normalizedOpps;
+    companies = normalizedCompanies;
+    saveData();
+    saveCompanies();
+    render();
+    renderCompanies();
+}
+
+if (btnImport && inputImportFile) {
+    btnImport.addEventListener('click', () => inputImportFile.click());
+
+    inputImportFile.addEventListener('change', async (event) => {
+        const file = event.target.files && event.target.files[0];
+        if (!file) return;
+
+        try {
+            const text = await file.text();
+            importBackupFromText(text);
+            alert('Import complete. Opportunities and watchlist restored.');
+        } catch (error) {
+            alert('Import failed. Please choose a valid Notifyy backup JSON file.');
+            console.error('Import error:', error);
+        } finally {
+            inputImportFile.value = '';
+        }
+    });
+}
+
 function playSound() {
     // Simple beep using Web Audio API to avoid external assets
     if (!window.AudioContext && !window.webkitAudioContext) return;
@@ -178,7 +331,7 @@ function triggerNotification(opp) {
     // Fire Notification
     new Notification(`Deadline: ${opp.company}`, {
         body: `${opp.role} due in ${remainingHours} hours.`,
-        icon: './icons/icon-192.png',
+        icon: './icons/web-app-manifest-192x192.png',
         tag: opp.id,
         requireInteraction: true,
         vibrate: [200, 100, 200]
@@ -232,10 +385,11 @@ function createItem(opp) {
     div.className = `item ${urgencyClass}`;
     
     const linkHtml = opp.link ? `<div><a href="${opp.link}" target="_blank" style="color:var(--primary)">Link</a></div>` : '';
+    const roleText = opp.role && opp.role.trim() ? opp.role : 'ROLE NOT SET';
     div.innerHTML = `
         <div class="item-header">
             <span class="company">${opp.company}</span>
-            <span class="role">${opp.role}</span>
+            <span class="role">${roleText}</span>
         </div>
         ${linkHtml}
         <div class="countdown" id="timer-${opp.id}">Loading...</div>
@@ -295,11 +449,16 @@ function uiLoop() {
 
 form.addEventListener('submit', (e) => {
     e.preventDefault();
+    const company = document.getElementById('company').value.trim();
+    const role = document.getElementById('role').value.trim();
+    const link = document.getElementById('link').value.trim();
+    if (!company) return;
+
     const newOpp = {
         id: crypto.randomUUID(),
-        company: document.getElementById('company').value,
-        role: document.getElementById('role').value,
-        link: document.getElementById('link').value || '',
+        company,
+        role,
+        link,
         // deadline is date-only (YYYY-MM-DD). Parse as local midnight.
         deadline: (function(d){
             const val = document.getElementById('deadline').value;
@@ -324,13 +483,27 @@ const companyForm = document.getElementById('company-form');
 if (companyForm) {
     companyForm.addEventListener('submit', (e) => {
         e.preventDefault();
-        const input = document.getElementById('company-name');
-        const name = input.value.trim();
+        const nameInput = document.getElementById('company-name');
+        const linkInput = document.getElementById('company-link');
+        const name = nameInput.value.trim();
+        const link = linkInput.value.trim();
         if (!name) return;
-        if (!companies.includes(name)) companies.push(name);
+
+        const existing = companies.find(c => c.name.toLowerCase() === name.toLowerCase());
+        if (existing) {
+            if (link) existing.link = link;
+        } else {
+            companies.push({
+                name,
+                link,
+                createdAt: Date.now()
+            });
+        }
+
         saveCompanies();
         renderCompanies();
-        input.value = '';
+        nameInput.value = '';
+        linkInput.value = '';
     });
 }
 

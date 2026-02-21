@@ -117,6 +117,8 @@ button {
 .company-item {
     background: linear-gradient(135deg, #1e1e1e 0%, #2a2a2a 100%);
     border-left-color: var(--primary);
+    padding: 0.75rem;
+    margin-bottom: 0.65rem;
 }
 
 .company-item:hover {
@@ -151,7 +153,23 @@ button {
 }
 
 #companies .form-group {
-    grid-template-columns: 1fr auto;
+    grid-template-columns: 1fr 1fr auto;
+}
+
+.company-item .item-header {
+    margin-bottom: 0.25rem;
+}
+
+.company-item .actions {
+    margin-top: 0.6rem;
+}
+
+.company-link {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 /* Improved Button Hover */

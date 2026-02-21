@@ -1,12 +1,16 @@
-const CACHE_NAME = 'notifyy-v1';
+const CACHE_NAME = 'notifyy-v2';
 const ASSETS = [
     './',
     './index.html',
     './styles.css',
     './app.js',
     './manifest.json',
-    './icons/icon-192.png',
-    './icons/icon-512.png'
+    './icons/favicon.ico',
+    './icons/favicon-96x96.png',
+    './icons/favicon.svg',
+    './icons/logo_notifyy180.png',
+    './icons/web-app-manifest-192x192.png',
+    './icons/web-app-manifest-512x512.png'
 ];
 
 self.addEventListener('install', (event) => {
@@ -17,13 +21,40 @@ self.addEventListener('install', (event) => {
 });
 
 self.addEventListener('activate', (event) => {
-    event.waitUntil(clients.claim());
+    event.waitUntil(
+        caches.keys().then((keys) => {
+            return Promise.all(
+                keys
+                    .filter((key) => key !== CACHE_NAME)
+                    .map((key) => caches.delete(key))
+            );
+        }).then(() => clients.claim())
+    );
 });
 
 self.addEventListener('fetch', (event) => {
+    const request = event.request;
+    const url = new URL(request.url);
+    const isAppShellResource =
+        request.method === 'GET' &&
+        (url.pathname.endsWith('.html') || url.pathname.endsWith('.js') || url.pathname.endsWith('.css'));
+
+    if (isAppShellResource) {
+        event.respondWith(
+            fetch(request)
+                .then((networkResponse) => {
+                    const responseClone = networkResponse.clone();
+                    caches.open(CACHE_NAME).then((cache) => cache.put(request, responseClone));
+                    return networkResponse;
+                })
+                .catch(() => caches.match(request))
+        );
+        return;
+    }
+
     event.respondWith(
-        caches.match(event.request).then((response) => {
-            return response || fetch(event.request);
+        caches.match(request).then((response) => {
+            return response || fetch(request);
         })
     );
 });

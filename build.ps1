@@ -2,7 +2,7 @@
 # Run this script from the repository root to rebuild the executable
 
 Write-Host "==================================" -ForegroundColor Cyan
-Write-Host "  Notifyy Build Script v2.0" -ForegroundColor Cyan
+Write-Host "  Notifyy Build Script v2.0.4" -ForegroundColor Cyan
 Write-Host "==================================" -ForegroundColor Cyan
 Write-Host ""
 
@@ -18,7 +18,7 @@ Write-Host "Activating virtual environment..." -ForegroundColor Yellow
 
 # Install/upgrade dependencies
 Write-Host "Installing dependencies..." -ForegroundColor Yellow
-python -m pip install --upgrade pip pyinstaller pillow
+python -m pip install --upgrade pip pyinstaller pillow pystray
 
 # Clean previous builds
 Write-Host "Cleaning previous builds..." -ForegroundColor Yellow
@@ -36,7 +36,8 @@ python -m PyInstaller `
     --onefile `
     --windowed `
     --add-data "web;web" `
-    --icon="web\icons\icon-192.png" `
+    --hidden-import pystray._win32 `
+    --icon="web\icons\favicon.ico" `
     --name="Notifyy" `
     notifyy.py
 
